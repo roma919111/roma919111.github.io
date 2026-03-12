@@ -14,7 +14,7 @@ background:#f5f5f5;
 }
 
 video{
-width:80%;
+width:90%;
 max-width:800px;
 margin-top:20px;
 }
@@ -22,6 +22,11 @@ margin-top:20px;
 select{
 padding:10px;
 font-size:16px;
+margin-top:10px;
+}
+
+input{
+margin-top:20px;
 }
 </style>
 
@@ -29,57 +34,95 @@ font-size:16px;
 
 <body>
 
-<h2>مشغل القنوات</h2>
+<h2>مشغل IPTV</h2>
+
+<input type="file" id="fileInput" accept=".m3u">
+
+<br>
 
 <select id="channels"></select>
 
-<br><br>
+<br>
 
 <video id="video" controls autoplay></video>
 
 <script>
 
-let playlist = `
-#EXTM3U
-#EXTINF:-1,Channel 1
-https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
-#EXTINF:-1,Channel 2
-https://test-streams.mux.dev/test_001/stream.m3u8
-`;
+document.getElementById("fileInput").addEventListener("change", function(){
 
-let lines = playlist.split("\n");
+let file = this.files[0];
+
+let reader = new FileReader();
+
+reader.onload = function(e){
+
+let text = e.target.result;
+
+loadM3U(text);
+
+};
+
+reader.readAsText(file);
+
+});
+
+function loadM3U(data){
+
+let lines = data.split("\n");
+
 let select = document.getElementById("channels");
 
+select.innerHTML="";
+
 for(let i=0;i<lines.length;i++){
+
 if(lines[i].startsWith("#EXTINF")){
+
 let name = lines[i].split(",")[1];
+
 let url = lines[i+1];
 
 let option = document.createElement("option");
-option.value = url;
+
+option.value = url.trim();
+
 option.text = name;
 
 select.appendChild(option);
-}
+
 }
 
-select.onchange = function(){
-play(this.value);
-}
-
-function play(url){
-let video = document.getElementById("video");
-
-if(Hls.isSupported()){
-let hls = new Hls();
-hls.loadSource(url);
-hls.attachMedia(video);
-}else{
-video.src = url;
-}
 }
 
 play(select.value);
+
+}
+
+document.getElementById("channels").onchange=function(){
+
+play(this.value);
+
+}
+
+function play(url){
+
+let video=document.getElementById("video");
+
+if(Hls.isSupported()){
+
+let hls=new Hls();
+
+hls.loadSource(url);
+
+hls.attachMedia(video);
+
+}else{
+
+video.src=url;
+
+}
+
+}
 
 </script>
 
