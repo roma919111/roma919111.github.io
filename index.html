@@ -2,43 +2,89 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>EagleEye Tools</title>
+<title>EagleEye Tools - تحويل الصورة إلى PDF</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
+
 body{
-font-family:Arial;
+margin:0;
+font-family:Tahoma;
+background:#f4f6fb;
 text-align:center;
-background:#f5f5f5;
-padding-top:40px;
+}
+
+.header{
+background:#111827;
+color:white;
+padding:20px;
+font-size:22px;
 }
 
 .container{
+margin-top:60px;
+}
+
+.tool-box{
 background:white;
-padding:30px;
-border-radius:10px;
 width:350px;
 margin:auto;
-box-shadow:0 0 10px rgba(0,0,0,0.1);
+padding:30px;
+border-radius:12px;
+box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+
+h2{
+margin-bottom:20px;
+}
+
+input{
+margin-top:10px;
 }
 
 button{
-background:#f0a500;
+background:#f59e0b;
 border:none;
 padding:12px 25px;
-font-size:18px;
+margin-top:20px;
+font-size:16px;
 border-radius:8px;
 cursor:pointer;
-margin-top:20px;
+color:white;
 }
+
+button:hover{
+background:#d97706;
+}
+
+.footer{
+margin-top:60px;
+padding:20px;
+font-size:14px;
+color:#555;
+}
+
+.store{
+display:block;
+margin-top:10px;
+color:#2563eb;
+text-decoration:none;
+}
+
 </style>
 
 </head>
 
 <body>
 
+<div class="header">
+أدوات EagleEye المجانية
+</div>
+
 <div class="container">
+
+<div class="tool-box">
 
 <h2>تحويل الصورة إلى PDF</h2>
 
@@ -50,28 +96,40 @@ margin-top:20px;
 
 </div>
 
+</div>
+
+<div class="footer">
+
+جميع الأدوات مجانية  
+
+<a class="store" href="https://eagleeyedigits.com">
+زيارة متجر EagleEyeDigits
+</a>
+
+</div>
+
 <script>
 
 function convertImage(){
 
 const { jsPDF } = window.jspdf;
 
-let file = document.getElementById("imageInput").files[0];
+let file=document.getElementById("imageInput").files[0];
 
 if(!file){
 alert("اختر صورة أولاً");
 return;
 }
 
-let reader = new FileReader();
+let reader=new FileReader();
 
-reader.onload = function(e){
+reader.onload=function(e){
 
-let img = new Image();
+let img=new Image();
 
-img.onload = function(){
+img.onload=function(){
 
-let pdf = new jsPDF();
+let pdf=new jsPDF();
 
 pdf.addImage(img,'JPEG',10,10,180,160);
 
@@ -79,7 +137,7 @@ pdf.save("image.pdf");
 
 };
 
-img.src = e.target.result;
+img.src=e.target.result;
 
 };
 
