@@ -3,7 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>EagleEyeDigits IPTV</title>
 
@@ -13,78 +13,70 @@
 
 body{
 margin:0;
+font-family:Arial;
 background:#0f172a;
 color:white;
-font-family:Arial;
 }
 
 .header{
-background:#020617;
-padding:20px;
-font-size:22px;
 text-align:center;
-font-weight:bold;
+font-size:22px;
+padding:15px;
+background:#020617;
 }
 
 .container{
 display:flex;
-height:90vh;
+flex-wrap:wrap;
 }
 
 .categories{
-width:20%;
-background:#020617;
+width:100%;
+max-height:200px;
 overflow:auto;
+background:#020617;
 padding:10px;
 }
 
 .channels{
-width:30%;
-background:#020617;
+width:40%;
+height:60vh;
 overflow:auto;
+background:#020617;
 padding:10px;
 }
 
 .player{
-width:50%;
+width:60%;
 display:flex;
-flex-direction:column;
 align-items:center;
 justify-content:center;
 }
 
 .item{
 background:#1e293b;
-padding:10px;
 margin:6px 0;
+padding:10px;
 border-radius:6px;
 cursor:pointer;
-display:flex;
-align-items:center;
 }
 
 .item:hover{
 background:#334155;
 }
 
-.logo{
-width:40px;
-height:40px;
-margin-right:10px;
-}
-
 video{
 width:95%;
-max-height:70vh;
+max-height:60vh;
 background:black;
 }
 
 .search{
-width:95%;
+width:100%;
 padding:10px;
 margin-bottom:10px;
-border-radius:6px;
 border:none;
+border-radius:6px;
 }
 
 </style>
@@ -97,6 +89,140 @@ border:none;
 EagleEyeDigits IPTV
 </div>
 
+<div class="container">
+
+<div class="categories" id="categories">
+جاري تحميل التصنيفات...
+</div>
+
+<div class="channels">
+
+<input class="search" id="search" placeholder="بحث عن قناة">
+
+<div id="channelList"></div>
+
+</div>
+
+<div class="player">
+
+<video id="video" controls autoplay></video>
+
+</div>
+
+</div>
+
+<script>
+
+const server="http://silka.m3um9xplus.org:2052"
+const user="40756292371865"
+const pass="18994994491762"
+
+const api=server+"/player_api.php?username="+user+"&password="+pass
+
+let channels=[]
+
+function loadCategories(){
+
+fetch(api+"&action=get_live_categories")
+.then(r=>r.json())
+.then(data=>{
+
+let box=document.getElementById("categories")
+
+box.innerHTML=""
+
+data.forEach(cat=>{
+
+let div=document.createElement("div")
+
+div.className="item"
+
+div.innerText=cat.category_name
+
+div.onclick=()=>loadChannels(cat.category_id)
+
+box.appendChild(div)
+
+})
+
+})
+
+}
+
+function loadChannels(cat){
+
+fetch(api+"&action=get_live_streams&category_id="+cat)
+.then(r=>r.json())
+.then(data=>{
+
+channels=data
+
+renderChannels(data)
+
+})
+
+}
+
+function renderChannels(list){
+
+let box=document.getElementById("channelList")
+
+box.innerHTML=""
+
+list.forEach(ch=>{
+
+let div=document.createElement("div")
+
+div.className="item"
+
+div.innerText=ch.name
+
+div.onclick=()=>play(ch.stream_id)
+
+box.appendChild(div)
+
+})
+
+}
+
+function play(id){
+
+let video=document.getElementById("video")
+
+let url=server+"/live/"+user+"/"+pass+"/"+id+".m3u8"
+
+if(Hls.isSupported()){
+
+let hls=new Hls()
+
+hls.loadSource(url)
+
+hls.attachMedia(video)
+
+}else{
+
+video.src=url
+
+}
+
+}
+
+document.getElementById("search").oninput=function(){
+
+let q=this.value.toLowerCase()
+
+let filtered=channels.filter(c=>c.name.toLowerCase().includes(q))
+
+renderChannels(filtered)
+
+}
+
+loadCategories()
+
+</script>
+
+</body>
+</html>
 <div class="container">
 
 <div class="categories" id="categories"></div>
