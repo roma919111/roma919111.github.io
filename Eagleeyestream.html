@@ -1,166 +1,199 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>مشغل IPTV</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6fb;
-      margin: 0;
-      padding: 20px;
-      text-align: center;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EagleEyeDigits IPTV Player</title>
 
-    .box {
-      max-width: 900px;
-      margin: 0 auto;
-    }
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-    input {
-      width: 100%;
-      max-width: 700px;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
+<style>
 
-    button {
-      padding: 10px 18px;
-      border: none;
-      background: #f59e0b;
-      color: #fff;
-      cursor: pointer;
-      border-radius: 6px;
-    }
+body{
+background:#0f172a;
+color:white;
+font-family:Arial;
+margin:0;
+padding:0;
+}
 
-    #channels {
-      margin: 20px auto;
-      max-width: 700px;
-      text-align: right;
-    }
+.header{
+padding:20px;
+text-align:center;
+font-size:24px;
+font-weight:bold;
+background:#020617;
+}
 
-    .channel {
-      background: #fff;
-      border: 1px solid #ddd;
-      padding: 10px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      border-radius: 6px;
-    }
+.container{
+display:flex;
+height:90vh;
+}
 
-    .channel:hover {
-      background: #f9fafb;
-    }
+.channels{
+width:35%;
+overflow:auto;
+background:#020617;
+padding:10px;
+}
 
-    video {
-      width: 100%;
-      max-width: 900px;
-      margin-top: 20px;
-      background: #000;
-    }
+.player{
+width:65%;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+}
 
-    #status {
-      margin-top: 12px;
-      color: #444;
-    }
-  </style>
+.channel{
+padding:10px;
+margin:5px 0;
+background:#1e293b;
+border-radius:6px;
+cursor:pointer;
+}
+
+.channel:hover{
+background:#334155;
+}
+
+input{
+width:95%;
+padding:10px;
+margin-bottom:10px;
+border-radius:6px;
+border:none;
+}
+
+video{
+width:90%;
+max-height:70vh;
+background:black;
+}
+
+</style>
 </head>
+
 <body>
-  <div class="box">
-    <h2>مشغل IPTV</h2>
 
-    <input
-      id="playlist"
-      type="text"
-      placeholder="ضع رابط M3U هنا"
-      value="http://silka.m3um9xplus.org:2052/get.php?username=40756292371865&password=18994994491762&type=m3u_plus&output=m3u8"
-    />
+<div class="header">
+EagleEyeDigits IPTV Player
+</div>
 
-    <br />
-    <button onclick="loadPlaylist()">تحميل القنوات</button>
+<div class="container">
 
-    <div id="status"></div>
-    <div id="channels"></div>
+<div class="channels">
 
-    <video id="player" controls playsinline></video>
-  </div>
+<input id="playlist" placeholder="ضع رابط m3u هنا">
 
-  <script>
-    const proxyBase =
-      "https://muddy-lab-a457.maq9801.workers.dev/?url=";
+<button onclick="loadPlaylist()">تحميل</button>
 
-    async function loadPlaylist() {
-      const url = document.getElementById("playlist").value.trim();
-      const status = document.getElementById("status");
-      const channels = document.getElementById("channels");
+<input id="search" placeholder="بحث عن قناة">
 
-      if (!url) {
-        status.textContent = "ضع رابط البلايليست أولاً.";
-        return;
-      }
+<div id="channelList"></div>
 
-      status.textContent = "جارِ تحميل البلايليست...";
-      channels.innerHTML = "";
+</div>
 
-      try {
-        const proxyUrl = proxyBase + encodeURIComponent(url);
-        const response = await fetch(proxyUrl);
-        const data = await response.text();
+<div class="player">
 
-        if (!data.includes("#EXTM3U")) {
-          status.textContent = "الرابط لا يبدو كملف M3U صالح.";
-          return;
-        }
+<video id="video" controls autoplay></video>
 
-        const lines = data.split(/\r?\n/);
-        let count = 0;
+</div>
 
-        for (let i = 0; i < lines.length; i++) {
-          if (lines[i].startsWith("#EXTINF")) {
-            const name = lines[i].split(",").slice(1).join(",").trim() || `قناة ${count + 1}`;
-            const streamUrl = (lines[i + 1] || "").trim();
+</div>
 
-            if (!streamUrl || streamUrl.startsWith("#")) continue;
+<script>
 
-            const div = document.createElement("div");
-            div.className = "channel";
-            div.textContent = name;
-            div.onclick = () => playChannel(streamUrl);
-            channels.appendChild(div);
-            count++;
-          }
-        }
+let channels=[]
+let hls
 
-        status.textContent = count
-          ? `تم تحميل ${count} قناة/عنصر.`
-          : "لم يتم العثور على قنوات داخل البلايليست.";
-      } catch (err) {
-        status.textContent = "فشل تحميل البلايليست.";
-        console.error(err);
-      }
-    }
+function loadPlaylist(){
 
-    function playChannel(url) {
-      const video = document.getElementById("player");
+let url=document.getElementById("playlist").value
 
-      if (window.currentHls) {
-        window.currentHls.destroy();
-        window.currentHls = null;
-      }
+let proxy="https://muddy-lab-a457.maq9801.workers.dev/?url="+encodeURIComponent(url)
 
-      if (Hls.isSupported() && url.includes(".m3u8")) {
-        const hls = new Hls();
-        hls.loadSource(url);
-        hls.attachMedia(video);
-        window.currentHls = hls;
-      } else {
-        video.src = url;
-      }
+fetch(proxy)
+.then(r=>r.text())
+.then(data=>{
 
-      video.play().catch(() => {});
-    }
-  </script>
+let lines=data.split("\n")
+
+for(let i=0;i<lines.length;i++){
+
+if(lines[i].startsWith("#EXTINF")){
+
+let name=lines[i].split(",")[1]
+
+let link=lines[i+1]
+
+channels.push({name,link})
+
+}
+
+}
+
+renderChannels(channels.slice(0,200))
+
+})
+
+}
+
+function renderChannels(list){
+
+let container=document.getElementById("channelList")
+
+container.innerHTML=""
+
+list.forEach(c=>{
+
+let div=document.createElement("div")
+
+div.className="channel"
+
+div.innerText=c.name
+
+div.onclick=()=>play(c.link)
+
+container.appendChild(div)
+
+})
+
+}
+
+function play(url){
+
+let video=document.getElementById("video")
+
+if(Hls.isSupported()){
+
+if(hls)hls.destroy()
+
+hls=new Hls()
+
+hls.loadSource(url)
+
+hls.attachMedia(video)
+
+}else{
+
+video.src=url
+
+}
+
+}
+
+document.getElementById("search").oninput=function(){
+
+let q=this.value.toLowerCase()
+
+let filtered=channels.filter(c=>c.name.toLowerCase().includes(q))
+
+renderChannels(filtered.slice(0,200))
+
+}
+
+</script>
+
 </body>
 </html>
