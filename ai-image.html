@@ -1,120 +1,135 @@
 <!DOCTYPE html>
 <html lang="ar">
-
 <head>
-<meta charset="UTF-8">
-<title>مولد الصور بالذكاء الاصطناعي</title>
+  <meta charset="UTF-8" />
+  <title>مولد الصور بالذكاء الاصطناعي</title>
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      text-align:center;
+      background:#111;
+      color:white;
+      padding:40px;
+    }
 
-<style>
+    input{
+      width:300px;
+      padding:10px;
+      margin:10px;
+      border-radius:6px;
+      border:none;
+    }
 
-body{
-font-family:Arial;
-text-align:center;
-background:#111;
-color:white;
-padding:40px;
-}
+    button{
+      padding:12px 25px;
+      background:#00c3ff;
+      border:none;
+      color:white;
+      font-size:16px;
+      cursor:pointer;
+      border-radius:6px;
+    }
 
-input{
-width:300px;
-padding:10px;
-margin:10px;
-border-radius:6px;
-border:none;
-}
+    button:hover{
+      background:#0099cc;
+    }
 
-button{
-padding:12px 25px;
-background:#00c3ff;
-border:none;
-color:white;
-font-size:16px;
-cursor:pointer;
-border-radius:6px;
-}
+    #status{
+      margin-top:15px;
+      color:#ccc;
+      min-height:24px;
+    }
 
-button:hover{
-background:#0099cc;
-}
+    #resultBox{
+      margin:30px auto 0;
+      width:90%;
+      max-width:700px;
+      position:relative;
+      display:none;
+    }
 
-img{
-margin-top:30px;
-max-width:90%;
-border-radius:10px;
-}
+    #result{
+      width:100%;
+      border-radius:10px;
+      display:block;
+    }
 
-</style>
+    #overlayText{
+      position:absolute;
+      left:50%;
+      bottom:30px;
+      transform:translateX(-50%);
+      color:white;
+      font-size:40px;
+      font-weight:bold;
+      text-shadow:0 2px 10px rgba(0,0,0,0.8);
+      width:90%;
+      text-align:center;
+      pointer-events:none;
+    }
+  </style>
 </head>
-
 <body>
 
-<h2>🎨 مولد الصور بالذكاء الاصطناعي</h2>
+  <h2>🎨 مولد الصور بالذكاء الاصطناعي</h2>
 
-<input id="prompt" placeholder="اكتب وصف الصورة">
+  <input id="prompt" placeholder="اكتب وصف الصورة" />
+  <br />
+  <input id="text" placeholder="اكتب النص العربي على الصورة" />
+  <br />
+  <button onclick="generate()">إنشاء الصورة</button>
 
-<br>
+  <div id="status"></div>
 
-<input id="text" placeholder="اكتب النص العربي على الصورة">
+  <div id="resultBox">
+    <img id="result" alt="Generated image" />
+    <div id="overlayText"></div>
+  </div>
 
-<br>
+  <script>
+    async function generate() {
+      const prompt = document.getElementById("prompt").value.trim();
+      const text = document.getElementById("text").value.trim();
+      const status = document.getElementById("status");
+      const result = document.getElementById("result");
+      const resultBox = document.getElementById("resultBox");
+      const overlayText = document.getElementById("overlayText");
 
-<button onclick="generate()">إنشاء الصورة</button>
+      if (!prompt) {
+        status.textContent = "اكتب وصف الصورة أولاً";
+        return;
+      }
 
-<br>
+      status.textContent = "جارٍ إنشاء الصورة...";
+      resultBox.style.display = "none";
 
-<img id="result"/>
+      try {
+        const response = await fetch("https://11githubio-production.up.railway.app/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ prompt })
+        });
 
-<script>
+        const data = await response.json();
+        console.log(data);
 
-async function generate(){
+        if (!data || !data.data || !data.data[0] || !data.data[0].url) {
+          status.textContent = "فشل توليد الصورة";
+          return;
+        }
 
-let prompt = document.getElementById("prompt").value
-let text = document.getElementById("text").value
-
-let response = await fetch("fetch("https://11githubio-production.up.railway.app/generate",{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-prompt:prompt
-})
-})
-
-let data = await response.json()
-
-let img = new Image()
-
-img.crossOrigin="anonymous"
-
-img.src = data.data[0].url
-
-img.onload = function(){
-
-let canvas = document.createElement("canvas")
-
-canvas.width = img.width
-canvas.height = img.height
-
-let ctx = canvas.getContext("2d")
-
-ctx.drawImage(img,0,0)
-
-ctx.font="60px Arial"
-ctx.fillStyle="white"
-ctx.textAlign="center"
-
-ctx.fillText(text,canvas.width/2,canvas.height-80)
-
-let finalImage = canvas.toDataURL()
-
-document.getElementById("result").src = finalImage
-
-}
-
-}
-
-</script>
+        result.src = data.data[0].url;
+        overlayText.textContent = text;
+        resultBox.style.display = "block";
+        status.textContent = "تم إنشاء الصورة";
+      } catch (error) {
+        console.error(error);
+        status.textContent = "حدث خطأ في الاتصال";
+      }
+    }
+  </script>
 
 </body>
 </html>
