@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="ar">
+
 <head>
 <meta charset="UTF-8">
 <title>مولد الصور العربية</title>
+
 <style>
 
 body{
@@ -10,25 +12,35 @@ font-family:Arial;
 text-align:center;
 background:#111;
 color:white;
+padding:40px;
 }
 
 input{
 width:300px;
 padding:10px;
 margin:10px;
+border-radius:6px;
+border:none;
 }
 
 button{
-padding:10px 20px;
+padding:12px 25px;
 background:#00c3ff;
 border:none;
 color:white;
+font-size:16px;
 cursor:pointer;
+border-radius:6px;
+}
+
+button:hover{
+background:#0099cc;
 }
 
 img{
-margin-top:20px;
+margin-top:30px;
 max-width:90%;
+border-radius:10px;
 }
 
 </style>
@@ -36,13 +48,13 @@ max-width:90%;
 
 <body>
 
-<h2>توليد صورة بالذكاء الاصطناعي</h2>
+<h2>🎨 مولد الصور بالذكاء الاصطناعي</h2>
 
-<input id="prompt" placeholder="وصف الصورة">
+<input id="prompt" placeholder="اكتب وصف الصورة">
 
 <br>
 
-<input id="text" placeholder="النص العربي">
+<input id="text" placeholder="اكتب النص العربي على الصورة">
 
 <br>
 
@@ -57,6 +69,7 @@ max-width:90%;
 async function generate(){
 
 let prompt = document.getElementById("prompt").value
+let text = document.getElementById("text").value
 
 let response = await fetch("https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",{
 method:"POST",
@@ -73,7 +86,34 @@ size:"1024x1024"
 
 let data = await response.json()
 
-document.getElementById("result").src = data.data[0].url
+let img = new Image()
+
+img.crossOrigin="anonymous"
+
+img.src = data.data[0].url
+
+img.onload = function(){
+
+let canvas = document.createElement("canvas")
+
+canvas.width = img.width
+canvas.height = img.height
+
+let ctx = canvas.getContext("2d")
+
+ctx.drawImage(img,0,0)
+
+ctx.font="60px Arial"
+ctx.fillStyle="white"
+ctx.textAlign="center"
+
+ctx.fillText(text,canvas.width/2,canvas.height-80)
+
+let finalImage = canvas.toDataURL()
+
+document.getElementById("result").src = finalImage
+
+}
 
 }
 
