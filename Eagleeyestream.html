@@ -2,16 +2,16 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>مشغل IPTV</title>
+<title>IPTV Player</title>
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <style>
 
 body{
-font-family:Tahona;
-background:#f4f6fb;
+font-family:Arial;
 text-align:center;
+background:#f4f6fb;
 }
 
 input{
@@ -28,12 +28,8 @@ color:white;
 cursor:pointer;
 }
 
-#channels{
-margin-top:20px;
-}
-
 .channel{
-padding:10px;
+padding:8px;
 border-bottom:1px solid #ddd;
 cursor:pointer;
 }
@@ -50,7 +46,7 @@ margin-top:20px;
 
 <h2>مشغل IPTV</h2>
 
-<input type="text" id="m3uUrl" placeholder="ضع رابط playlist m3u">
+<input type="text" id="playlist" placeholder="ضع رابط M3U هنا">
 
 <br>
 
@@ -64,11 +60,15 @@ margin-top:20px;
 
 function loadPlaylist(){
 
-let url=document.getElementById("m3uUrl").value;
+let url=document.getElementById("playlist").value;
 
-fetch(url)
+fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url))
+
 .then(res=>res.text())
-.then(data=>parseM3U(data));
+
+.then(data=>parseM3U(data))
+
+.catch(()=>alert("لم يتم تحميل البلايليست"));
 
 }
 
@@ -76,9 +76,9 @@ function parseM3U(data){
 
 let lines=data.split("\n");
 
-let channels=document.getElementById("channels");
+let container=document.getElementById("channels");
 
-channels.innerHTML="";
+container.innerHTML="";
 
 for(let i=0;i<lines.length;i++){
 
@@ -96,11 +96,11 @@ div.innerText=name;
 
 div.onclick=function(){
 
-playChannel(link);
+play(link);
 
 };
 
-channels.appendChild(div);
+container.appendChild(div);
 
 }
 
@@ -108,7 +108,7 @@ channels.appendChild(div);
 
 }
 
-function playChannel(url){
+function play(url){
 
 let video=document.getElementById("video");
 
@@ -120,9 +120,7 @@ hls.loadSource(url);
 
 hls.attachMedia(video);
 
-}
-
-else{
+}else{
 
 video.src=url;
 
