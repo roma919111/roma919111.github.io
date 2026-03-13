@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>مولد الصور العربية</title>
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+background:#111;
+color:white;
+}
+
+input{
+width:300px;
+padding:10px;
+margin:10px;
+}
+
+button{
+padding:10px 20px;
+background:#00c3ff;
+border:none;
+color:white;
+cursor:pointer;
+}
+
+img{
+margin-top:20px;
+max-width:90%;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>توليد صورة بالذكاء الاصطناعي</h2>
+
+<input id="prompt" placeholder="وصف الصورة">
+
+<br>
+
+<input id="text" placeholder="النص العربي">
+
+<br>
+
+<button onclick="generate()">إنشاء الصورة</button>
+
+<br>
+
+<img id="result"/>
+
+<script>
+
+async function generate(){
+
+let prompt = document.getElementById("prompt").value
+
+let response = await fetch("https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer API_KEY"
+},
+body:JSON.stringify({
+model:"seedream-4.5",
+prompt:prompt,
+size:"1024x1024"
+})
+})
+
+let data = await response.json()
+
+document.getElementById("result").src = data.data[0].url
+
+}
+
+</script>
+
+</body>
+</html>
