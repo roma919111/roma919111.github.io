@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>EagleEyeDigits IPTV Player</title>
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -14,12 +14,11 @@ background:#0f172a;
 color:white;
 font-family:Arial;
 margin:0;
-padding:0;
 }
 
 .header{
-padding:20px;
 text-align:center;
+padding:20px;
 font-size:24px;
 font-weight:bold;
 background:#020617;
@@ -40,15 +39,14 @@ padding:10px;
 .player{
 width:65%;
 display:flex;
-flex-direction:column;
 align-items:center;
 justify-content:center;
 }
 
 .channel{
-padding:10px;
-margin:5px 0;
 background:#1e293b;
+padding:10px;
+margin:6px 0;
 border-radius:6px;
 cursor:pointer;
 }
@@ -63,6 +61,15 @@ padding:10px;
 margin-bottom:10px;
 border-radius:6px;
 border:none;
+}
+
+button{
+padding:10px;
+background:#f59e0b;
+border:none;
+border-radius:6px;
+cursor:pointer;
+margin-bottom:10px;
 }
 
 video{
@@ -84,9 +91,9 @@ EagleEyeDigits IPTV Player
 
 <div class="channels">
 
-<input id="playlist" placeholder="ضع رابط m3u هنا">
+<input id="playlist" placeholder="ضع رابط M3U هنا">
 
-<button onclick="loadPlaylist()">تحميل</button>
+<button onclick="loadPlaylist()">تحميل القنوات</button>
 
 <input id="search" placeholder="بحث عن قناة">
 
@@ -97,6 +104,112 @@ EagleEyeDigits IPTV Player
 <div class="player">
 
 <video id="video" controls autoplay></video>
+
+</div>
+
+</div>
+
+<script>
+
+let channels=[]
+let hls
+
+function loadPlaylist(){
+
+channels=[]
+
+document.getElementById("channelList").innerHTML="جارٍ تحميل القنوات..."
+
+let url=document.getElementById("playlist").value
+
+let proxy="https://muddy-lab-a457.maq9801.workers.dev/?url="+encodeURIComponent(url)
+
+fetch(proxy,{cache:"force-cache"})
+.then(r=>r.text())
+.then(data=>{
+
+let lines=data.split("\n")
+
+let maxChannels=150
+
+for(let i=0;i<lines.length && channels.length<maxChannels;i++){
+
+if(lines[i].startsWith("#EXTINF")){
+
+let name=lines[i].split(",")[1]
+
+let link=lines[i+1]
+
+channels.push({name,link})
+
+}
+
+}
+
+renderChannels(channels)
+
+})
+
+}
+
+function renderChannels(list){
+
+let container=document.getElementById("channelList")
+
+container.innerHTML=""
+
+list.forEach(c=>{
+
+let div=document.createElement("div")
+
+div.className="channel"
+
+div.innerText=c.name
+
+div.onclick=()=>play(c.link)
+
+container.appendChild(div)
+
+})
+
+}
+
+function play(url){
+
+let video=document.getElementById("video")
+
+if(Hls.isSupported()){
+
+if(hls)hls.destroy()
+
+hls=new Hls()
+
+hls.loadSource(url)
+
+hls.attachMedia(video)
+
+}else{
+
+video.src=url
+
+}
+
+}
+
+document.getElementById("search").oninput=function(){
+
+let q=this.value.toLowerCase()
+
+let filtered=channels.filter(c=>c.name.toLowerCase().includes(q))
+
+renderChannels(filtered)
+
+}
+
+</script>
+
+</body>
+</html><video id="video" controls autoplay></video>
 
 </div>
 
