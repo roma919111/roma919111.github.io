@@ -1,11 +1,3 @@
-<br><br>
-
-<input type="text" id="m3uUrl" placeholder="ضع رابط m3u هنا" style="width:80%;padding:10px">
-
-<br><br>
-
-<button onclick="loadUrl()">تحميل الرابط</button>
-
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -15,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <style>
+
 body{
 font-family:Arial;
 text-align:center;
@@ -27,15 +20,22 @@ max-width:800px;
 margin-top:20px;
 }
 
-select{
+input{
+width:80%;
 padding:10px;
-font-size:16px;
+margin-top:20px;
+}
+
+button{
+padding:10px 20px;
 margin-top:10px;
 }
 
-input{
-margin-top:20px;
+select{
+padding:10px;
+margin-top:10px;
 }
+
 </style>
 
 </head>
@@ -44,9 +44,13 @@ margin-top:20px;
 
 <h2>مشغل IPTV</h2>
 
-<input type="file" id="fileInput" accept=".m3u">
+<input type="text" id="m3uUrl" placeholder="ضع رابط M3U هنا">
 
 <br>
+
+<button onclick="loadUrl()">تحميل الرابط</button>
+
+<br><br>
 
 <select id="channels"></select>
 
@@ -56,29 +60,23 @@ margin-top:20px;
 
 <script>
 
-document.getElementById("fileInput").addEventListener("change", function(){
+function loadUrl(){
 
-let file = this.files[0];
+let url=document.getElementById("m3uUrl").value;
 
-let reader = new FileReader();
-
-reader.onload = function(e){
-
-let text = e.target.result;
-
-loadM3U(text);
-
-};
-
-reader.readAsText(file);
-
+fetch(url)
+.then(response=>response.text())
+.then(data=>{
+loadM3U(data);
 });
+
+}
 
 function loadM3U(data){
 
-let lines = data.split("\n");
+let lines=data.split("\n");
 
-let select = document.getElementById("channels");
+let select=document.getElementById("channels");
 
 select.innerHTML="";
 
@@ -86,15 +84,13 @@ for(let i=0;i<lines.length;i++){
 
 if(lines[i].startsWith("#EXTINF")){
 
-let name = lines[i].split(",")[1];
+let name=lines[i].split(",")[1];
+let url=lines[i+1];
 
-let url = lines[i+1];
+let option=document.createElement("option");
 
-let option = document.createElement("option");
-
-option.value = url.trim();
-
-option.text = name;
+option.value=url.trim();
+option.text=name;
 
 select.appendChild(option);
 
@@ -119,9 +115,7 @@ let video=document.getElementById("video");
 if(Hls.isSupported()){
 
 let hls=new Hls();
-
 hls.loadSource(url);
-
 hls.attachMedia(video);
 
 }else{
@@ -136,16 +130,3 @@ video.src=url;
 
 </body>
 </html>
-function loadUrl(){
-
-let url = document.getElementById("m3uUrl").value;
-
-fetch(url)
-.then(response => response.text())
-.then(data => {
-
-loadM3U(data);
-
-});
-
-}
