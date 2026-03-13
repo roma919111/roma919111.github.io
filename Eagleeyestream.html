@@ -1,13 +1,3 @@
-<h2>مشغل IPTV</h2>
-
-<input id="playlist" placeholder="ضع رابط M3U هنا" style="width:80%;padding:10px">
-
-<button onclick="loadPlaylist()">تشغيل</button>
-
-<br><br>
-
-<video id="player" controls width="100%" height="400"></video>
-
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <script>
@@ -21,8 +11,23 @@ let proxy = "https://muddy-lab-a457.maq9801.workers.dev/?url=" + encodeURICompon
 fetch(proxy)
 .then(res=>res.text())
 .then(data=>{
-console.log(data)
-alert("تم تحميل البلايليست")
+
+let lines = data.split("\n")
+
+let stream = lines.find(line => line.startsWith("http"))
+
+let video = document.getElementById("player")
+
+if(Hls.isSupported()){
+
+let hls = new Hls()
+
+hls.loadSource(stream)
+
+hls.attachMedia(video)
+
+}
+
 })
 
 }
