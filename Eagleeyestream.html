@@ -2,10 +2,8 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EagleEyeDigits IPTV Player</title>
-
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EagleEyeDigits IPTV</title>
 
 <style>
 
@@ -17,11 +15,10 @@ margin:0;
 }
 
 .header{
-text-align:center;
-padding:20px;
-font-size:24px;
-font-weight:bold;
 background:#020617;
+padding:20px;
+text-align:center;
+font-size:22px;
 }
 
 .container{
@@ -29,21 +26,28 @@ display:flex;
 height:90vh;
 }
 
-.channels{
-width:35%;
-overflow:auto;
+.categories{
+width:25%;
 background:#020617;
+overflow:auto;
+padding:10px;
+}
+
+.channels{
+width:25%;
+background:#020617;
+overflow:auto;
 padding:10px;
 }
 
 .player{
-width:65%;
+width:50%;
 display:flex;
 align-items:center;
 justify-content:center;
 }
 
-.channel{
+.item{
 background:#1e293b;
 padding:10px;
 margin:6px 0;
@@ -51,30 +55,13 @@ border-radius:6px;
 cursor:pointer;
 }
 
-.channel:hover{
+.item:hover{
 background:#334155;
 }
 
-input{
-width:95%;
-padding:10px;
-margin-bottom:10px;
-border-radius:6px;
-border:none;
-}
-
-button{
-padding:10px;
-background:#f59e0b;
-border:none;
-border-radius:6px;
-cursor:pointer;
-margin-bottom:10px;
-}
-
 video{
-width:90%;
-max-height:70vh;
+width:95%;
+max-height:80vh;
 background:black;
 }
 
@@ -89,222 +76,91 @@ EagleEyeDigits IPTV Player
 
 <div class="container">
 
-<div class="channels">
+<div class="categories" id="categories"></div>
 
-<input id="playlist" placeholder="ضع رابط M3U هنا">
-
-<button onclick="loadPlaylist()">تحميل القنوات</button>
-
-<input id="search" placeholder="بحث عن قناة">
-
-<div id="channelList"></div>
-
-</div>
+<div class="channels" id="channels"></div>
 
 <div class="player">
-
 <video id="video" controls autoplay></video>
-
 </div>
 
 </div>
 
 <script>
 
-let channels=[]
-let hls
+const server="http://silka.m3um9xplus.org:2052"
+const user="40756292371865"
+const pass="18994994491762"
 
-function loadPlaylist(){
+const api=server+"/player_api.php?username="+user+"&password="+pass
 
-channels=[]
+function loadCategories(){
 
-document.getElementById("channelList").innerHTML="جارٍ تحميل القنوات..."
-
-let url=document.getElementById("playlist").value
-
-let proxy="https://muddy-lab-a457.maq9801.workers.dev/?url="+encodeURIComponent(url)
-
-fetch(proxy,{cache:"force-cache"})
-.then(r=>r.text())
+fetch(api+"&action=get_live_categories")
+.then(r=>r.json())
 .then(data=>{
 
-let lines=data.split("\n")
+let container=document.getElementById("categories")
 
-let maxChannels=150
-
-for(let i=0;i<lines.length && channels.length<maxChannels;i++){
-
-if(lines[i].startsWith("#EXTINF")){
-
-let name=lines[i].split(",")[1]
-
-let link=lines[i+1]
-
-channels.push({name,link})
-
-}
-
-}
-
-renderChannels(channels)
-
-})
-
-}
-
-function renderChannels(list){
-
-let container=document.getElementById("channelList")
-
-container.innerHTML=""
-
-list.forEach(c=>{
+data.forEach(cat=>{
 
 let div=document.createElement("div")
 
-div.className="channel"
+div.className="item"
 
-div.innerText=c.name
+div.innerText=cat.category_name
 
-div.onclick=()=>play(c.link)
+div.onclick=()=>loadChannels(cat.category_id)
 
 container.appendChild(div)
 
 })
 
-}
-
-function play(url){
-
-let video=document.getElementById("video")
-
-if(Hls.isSupported()){
-
-if(hls)hls.destroy()
-
-hls=new Hls()
-
-hls.loadSource(url)
-
-hls.attachMedia(video)
-
-}else{
-
-video.src=url
-
-}
-
-}
-
-document.getElementById("search").oninput=function(){
-
-let q=this.value.toLowerCase()
-
-let filtered=channels.filter(c=>c.name.toLowerCase().includes(q))
-
-renderChannels(filtered)
-
-}
-
-</script>
-
-</body>
-</html><video id="video" controls autoplay></video>
-
-</div>
-
-</div>
-
-<script>
-
-let channels=[]
-let hls
-
-function loadPlaylist(){
-
-let url=document.getElementById("playlist").value
-
-let proxy="https://muddy-lab-a457.maq9801.workers.dev/?url="+encodeURIComponent(url)
-
-fetch(proxy)
-.then(r=>r.text())
-.then(data=>{
-
-let lines=data.split("\n")
-
-for(let i=0;i<lines.length;i++){
-
-if(lines[i].startsWith("#EXTINF")){
-
-let name=lines[i].split(",")[1]
-
-let link=lines[i+1]
-
-channels.push({name,link})
-
-}
-
-}
-
-renderChannels(channels.slice(0,200))
-
 })
 
 }
 
-function renderChannels(list){
+function loadChannels(cat){
 
-let container=document.getElementById("channelList")
+fetch(api+"&action=get_live_streams&category_id="+cat)
+.then(r=>r.json())
+.then(data=>{
+
+let container=document.getElementById("channels")
 
 container.innerHTML=""
 
-list.forEach(c=>{
+data.forEach(ch=>{
 
 let div=document.createElement("div")
 
-div.className="channel"
+div.className="item"
 
-div.innerText=c.name
+div.innerText=ch.name
 
-div.onclick=()=>play(c.link)
+div.onclick=()=>play(ch.stream_id)
 
 container.appendChild(div)
 
 })
 
+})
+
 }
 
-function play(url){
+function play(id){
+
+let url=server+"/live/"+user+"/"+pass+"/"+id+".m3u8"
 
 let video=document.getElementById("video")
 
-if(Hls.isSupported()){
-
-if(hls)hls.destroy()
-
-hls=new Hls()
-
-hls.loadSource(url)
-
-hls.attachMedia(video)
-
-}else{
-
 video.src=url
 
-}
+video.play()
 
 }
 
-document.getElementById("search").oninput=function(){
-
-let q=this.value.toLowerCase()
-
-let filtered=channels.filter(c=>c.name.toLowerCase().includes(q))
-
-renderChannels(filtered.slice(0,200))
-
-}
+loadCategories()
 
 </script>
 
