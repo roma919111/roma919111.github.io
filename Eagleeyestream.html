@@ -3,9 +3,9 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>EagleEyeDigits IPTV</title>
+<title>EagleEyeDigits IPTV Player</title>
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
@@ -16,33 +16,46 @@ margin:0;
 font-family:Arial;
 background:#0f172a;
 color:white;
-text-align:center;
 }
 
 header{
 background:#020617;
 padding:15px;
+text-align:center;
 font-size:22px;
 }
 
-#search{
-width:90%;
-padding:10px;
-margin:10px;
-border-radius:6px;
-border:none;
+.container{
+display:flex;
+flex-wrap:wrap;
 }
 
-#channels{
-max-height:300px;
+.sidebar{
+width:35%;
+background:#020617;
+height:85vh;
 overflow:auto;
 padding:10px;
 }
 
+.player{
+width:65%;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#0f172a;
+}
+
+video{
+width:95%;
+max-height:80vh;
+background:black;
+}
+
 .channel{
 background:#1e293b;
+margin:6px 0;
 padding:10px;
-margin:6px;
 border-radius:6px;
 cursor:pointer;
 }
@@ -51,10 +64,12 @@ cursor:pointer;
 background:#334155;
 }
 
-video{
-width:95%;
-margin-top:10px;
-background:black;
+.search{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+border-radius:6px;
+border:none;
 }
 
 </style>
@@ -65,21 +80,35 @@ background:black;
 
 <header>EagleEyeDigits IPTV</header>
 
-<input id="search" placeholder="بحث عن قناة">
+<div class="container">
 
-<div id="channels">
-جاري تحميل القنوات...
+<div class="sidebar">
+
+<input class="search" id="search" placeholder="بحث عن قناة">
+
+<div id="channels">جاري تحميل القنوات...</div>
+
 </div>
 
+<div class="player">
+
 <video id="video" controls autoplay></video>
+
+</div>
+
+</div>
 
 <script>
 
 const server="http://silka.m3um9xplus.org:2052"
-const user="40756292371865"
-const pass="18994994491762"
+const username="40756292371865"
+const password="18994994491762"
 
-const api=server+"/player_api.php?username="+user+"&password="+pass+"&action=get_live_streams"
+const proxy="https://muddy-lab-a457.maq9801.workers.dev/?url="
+
+const api=proxy+encodeURIComponent(
+server+"/player_api.php?username="+username+"&password="+password+"&action=get_live_streams"
+)
 
 let allChannels=[]
 
@@ -89,14 +118,73 @@ fetch(api)
 
 allChannels=data
 
-render(data)
+renderChannels(data)
+
+})
+.catch(()=>{
+
+document.getElementById("channels").innerHTML="فشل تحميل القنوات"
 
 })
 
-function render(list){
+function renderChannels(list){
 
 let box=document.getElementById("channels")
 
+box.innerHTML=""
+
+list.slice(0,500).forEach(ch=>{
+
+let div=document.createElement("div")
+
+div.className="channel"
+
+div.innerText=ch.name
+
+div.onclick=()=>playChannel(ch.stream_id)
+
+box.appendChild(div)
+
+})
+
+}
+
+function playChannel(id){
+
+let url=server+"/live/"+username+"/"+password+"/"+id+".m3u8"
+
+let video=document.getElementById("video")
+
+if(Hls.isSupported()){
+
+let hls=new Hls()
+
+hls.loadSource(url)
+
+hls.attachMedia(video)
+
+}else{
+
+video.src=url
+
+}
+
+}
+
+document.getElementById("search").oninput=function(){
+
+let q=this.value.toLowerCase()
+
+let filtered=allChannels.filter(c=>c.name.toLowerCase().includes(q))
+
+renderChannels(filtered)
+
+}
+
+</script>
+
+</body>
+</html>
 box.innerHTML=""
 
 list.slice(0,200).forEach(ch=>{
