@@ -1,35 +1,166 @@
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مشغل IPTV</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6fb;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
 
-<script>
+    .box {
+      max-width: 900px;
+      margin: 0 auto;
+    }
 
-function loadPlaylist(){
+    input {
+      width: 100%;
+      max-width: 700px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
 
-let url = document.getElementById("playlist").value
+    button {
+      padding: 10px 18px;
+      border: none;
+      background: #f59e0b;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 6px;
+    }
 
-let proxy = "https://muddy-lab-a457.maq9801.workers.dev/?url=" + encodeURIComponent(url)
+    #channels {
+      margin: 20px auto;
+      max-width: 700px;
+      text-align: right;
+    }
 
-fetch(proxy)
-.then(res=>res.text())
-.then(data=>{
+    .channel {
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
 
-let lines = data.split("\n")
+    .channel:hover {
+      background: #f9fafb;
+    }
 
-let stream = lines.find(line => line.startsWith("http"))
+    video {
+      width: 100%;
+      max-width: 900px;
+      margin-top: 20px;
+      background: #000;
+    }
 
-let video = document.getElementById("player")
+    #status {
+      margin-top: 12px;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>مشغل IPTV</h2>
 
-if(Hls.isSupported()){
+    <input
+      id="playlist"
+      type="text"
+      placeholder="ضع رابط M3U هنا"
+      value="http://silka.m3um9xplus.org:2052/get.php?username=40756292371865&password=18994994491762&type=m3u_plus&output=m3u8"
+    />
 
-let hls = new Hls()
+    <br />
+    <button onclick="loadPlaylist()">تحميل القنوات</button>
 
-hls.loadSource(stream)
+    <div id="status"></div>
+    <div id="channels"></div>
 
-hls.attachMedia(video)
+    <video id="player" controls playsinline></video>
+  </div>
 
-}
+  <script>
+    const proxyBase =
+      "https://muddy-lab-a457.maq9801.workers.dev/?url=";
 
-})
+    async function loadPlaylist() {
+      const url = document.getElementById("playlist").value.trim();
+      const status = document.getElementById("status");
+      const channels = document.getElementById("channels");
 
-}
+      if (!url) {
+        status.textContent = "ضع رابط البلايليست أولاً.";
+        return;
+      }
 
-</script>
+      status.textContent = "جارِ تحميل البلايليست...";
+      channels.innerHTML = "";
+
+      try {
+        const proxyUrl = proxyBase + encodeURIComponent(url);
+        const response = await fetch(proxyUrl);
+        const data = await response.text();
+
+        if (!data.includes("#EXTM3U")) {
+          status.textContent = "الرابط لا يبدو كملف M3U صالح.";
+          return;
+        }
+
+        const lines = data.split(/\r?\n/);
+        let count = 0;
+
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].startsWith("#EXTINF")) {
+            const name = lines[i].split(",").slice(1).join(",").trim() || `قناة ${count + 1}`;
+            const streamUrl = (lines[i + 1] || "").trim();
+
+            if (!streamUrl || streamUrl.startsWith("#")) continue;
+
+            const div = document.createElement("div");
+            div.className = "channel";
+            div.textContent = name;
+            div.onclick = () => playChannel(streamUrl);
+            channels.appendChild(div);
+            count++;
+          }
+        }
+
+        status.textContent = count
+          ? `تم تحميل ${count} قناة/عنصر.`
+          : "لم يتم العثور على قنوات داخل البلايليست.";
+      } catch (err) {
+        status.textContent = "فشل تحميل البلايليست.";
+        console.error(err);
+      }
+    }
+
+    function playChannel(url) {
+      const video = document.getElementById("player");
+
+      if (window.currentHls) {
+        window.currentHls.destroy();
+        window.currentHls = null;
+      }
+
+      if (Hls.isSupported() && url.includes(".m3u8")) {
+        const hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        window.currentHls = hls;
+      } else {
+        video.src = url;
+      }
+
+      video.play().catch(() => {});
+    }
+  </script>
+</body>
+</html>
