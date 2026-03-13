@@ -1,134 +1,30 @@
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-<meta charset="UTF-8">
-<title>IPTV Player</title>
-
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-<style>
-
-body{
-font-family:Arial;
-text-align:center;
-background:#f4f6fb;
-}
-
-input{
-width:80%;
-padding:10px;
-margin:10px;
-}
-
-button{
-padding:10px 20px;
-background:#ff9800;
-border:none;
-color:white;
-cursor:pointer;
-}
-
-.channel{
-padding:8px;
-border-bottom:1px solid #ddd;
-cursor:pointer;
-}
-
-video{
-width:80%;
-margin-top:20px;
-}
-
-</style>
-</head>
-
-<body>
-
 <h2>مشغل IPTV</h2>
 
-<input type="text" id="playlist" placeholder="ضع رابط M3U هنا">
+<input id="playlist" placeholder="ضع رابط M3U هنا" style="width:80%;padding:10px">
 
-<br>
+<button onclick="loadPlaylist()">تشغيل</button>
 
-<button onclick="loadPlaylist()">تحميل القنوات</button>
+<br><br>
 
-<div id="channels"></div>
+<video id="player" controls width="100%" height="400"></video>
 
-<video id="video" controls></video>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
 <script>
 
 function loadPlaylist(){
 
-let url=document.getElementById("playlist").value;
+let url = document.getElementById("playlist").value
 
-fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url))
+let proxy = "https://muddy-lab-a457.maq9801.workers.dev/?url=" + encodeURIComponent(url)
 
+fetch(proxy)
 .then(res=>res.text())
-
-.then(data=>parseM3U(data))
-
-.catch(()=>alert("لم يتم تحميل البلايليست"));
-
-}
-
-function parseM3U(data){
-
-let lines=data.split("\n");
-
-let container=document.getElementById("channels");
-
-container.innerHTML="";
-
-for(let i=0;i<lines.length;i++){
-
-if(lines[i].includes("#EXTINF")){
-
-let name=lines[i].split(",")[1];
-
-let link=lines[i+1];
-
-let div=document.createElement("div");
-
-div.className="channel";
-
-div.innerText=name;
-
-div.onclick=function(){
-
-play(link);
-
-};
-
-container.appendChild(div);
-
-}
-
-}
-
-}
-
-function play(url){
-
-let video=document.getElementById("video");
-
-if(Hls.isSupported()){
-
-let hls=new Hls();
-
-hls.loadSource(url);
-
-hls.attachMedia(video);
-
-}else{
-
-video.src=url;
-
-}
+.then(data=>{
+console.log(data)
+alert("تم تحميل البلايليست")
+})
 
 }
 
 </script>
-
-</body>
-</html>
