@@ -5,8 +5,6 @@
 <meta charset="UTF-8">
 <title>EagleEyeDigits IPTV</title>
 
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
 <style>
 
 body{
@@ -94,114 +92,9 @@ EagleEyeDigits IPTV
 
 <div class="login">
 
-<input id="server" placeholder="Server مثال: http://example.com:8080">
+<input id="server" placeholder="Server مثال http://example.com:8080">
 
 <br>
-
-<input id="username" placeholder="Username">
-
-<br>
-
-<input id="password" placeholder="Password">
-
-<br>
-
-<button onclick="loadChannels()">تحميل القنوات</button>
-
-</div>
-
-<div class="container">
-
-<div class="channels" id="channelList"></div>
-
-<div class="player">
-<video id="video" controls autoplay></video>
-</div>
-
-</div>
-
-<script>
-
-let server=""
-let username=""
-let password=""
-let channels=[]
-
-function loadChannels(){
-
-server=document.getElementById("server").value
-username=document.getElementById("username").value
-password=document.getElementById("password").value
-
-let proxy="https://muddy-lab-a457.maq9801.workers.dev/?url="
-
-let api = proxy + encodeURIComponent(
-server + "/player_api.php?username=" + username + "&password=" + password + "&action=get_live_streams"
-)
-
-fetch(api)
-.then(response=>response.json())
-.then(data=>{
-
-channels=data
-displayChannels(data)
-
-})
-
-}
-
-function displayChannels(list){
-
-let box=document.getElementById("channelList")
-
-box.innerHTML=""
-
-list.slice(0,300).forEach(function(ch){
-
-let div=document.createElement("div")
-
-div.className="channel"
-
-div.innerText=ch.name
-
-div.onclick=function(){
-
-playChannel(ch.stream_id)
-
-}
-
-box.appendChild(div)
-
-})
-
-}
-
-function playChannel(id){
-
-let video=document.getElementById("video")
-
-let url = server + "/live/" + username + "/" + password + "/" + id + ".m3u8"
-
-if(Hls.isSupported()){
-
-let hls=new Hls()
-
-hls.loadSource(url)
-
-hls.attachMedia(video)
-
-}else{
-
-video.src=url
-
-}
-
-}
-
-</script>
-
-</body>
-</html><br>
 
 <input id="username" placeholder="Username">
 
@@ -244,7 +137,7 @@ server + "/player_api.php?username=" + username + "&password=" + password + "&ac
 )
 
 fetch(api)
-.then(response=>response.json())
+.then(res=>res.json())
 .then(data=>{
 
 displayChannels(data)
@@ -259,7 +152,7 @@ let box=document.getElementById("channelList")
 
 box.innerHTML=""
 
-list.forEach(function(ch){
+list.forEach(ch=>{
 
 let div=document.createElement("div")
 
@@ -267,11 +160,7 @@ div.className="channel"
 
 div.innerText=ch.name
 
-div.onclick=function(){
-
-playChannel(ch.stream_id)
-
-}
+div.onclick=()=>playChannel(ch.stream_id)
 
 box.appendChild(div)
 
@@ -283,107 +172,10 @@ function playChannel(id){
 
 let video=document.getElementById("video")
 
-let url = server + "/live/" + username + "/" + password + "/" + id + ".mpegts"
+let url = server + "/live/" + username + "/" + password + "/" + id + ".ts"
 
-if(Hls.isSupported()){
+video.src = url
 
-let hls=new Hls()
-
-hls.loadSource(url)
-
-hls.attachMedia(video)
-
-}else{
-
-video.src=url
-
-}
-
-}
-
-</script>
-
-</body>
-</html>
-<input id="username" placeholder="Username">
-
-<br>
-
-<input id="password" placeholder="Password">
-
-<br>
-
-<button onclick="loadChannels()">تحميل القنوات</button>
-
-</div>
-
-<div class="container">
-
-<div class="channels" id="channelList"></div>
-
-<div class="player">
-<video id="video" controls autoplay></video>
-</div>
-
-</div>
-
-<script>
-
-let server=""
-let username=""
-let password=""
-
-function loadChannels(){
-
-server=document.getElementById("server").value
-username=document.getElementById("username").value
-password=document.getElementById("password").value
-
-let api = server + "/player_api.php?username=" + username + "&password=" + password + "&action=get_live_streams"
-
-fetch(api)
-.then(response=>response.json())
-.then(data=>{
-
-displayChannels(data)
-
-})
-
-}
-
-function displayChannels(list){
-
-let box=document.getElementById("channelList")
-
-box.innerHTML=""
-
-list.forEach(function(ch){
-
-let div=document.createElement("div")
-
-div.className="channel"
-
-div.innerText=ch.name
-
-div.onclick=function(){
-
-playChannel(ch.stream_id)
-
-}
-
-box.appendChild(div)
-
-})
-
-}
-
-function playChannel(id){
-
-let video=document.getElementById("video")
-
-let url = server + "/live/" + username + "/" + password + "/" + id
-
-video.src=url
 video.play()
 
 }
