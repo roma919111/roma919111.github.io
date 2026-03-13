@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <html lang="ar">
-
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>EagleEyeDigits IPTV</title>
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -13,76 +10,75 @@
 <style>
 
 body{
-margin:0;
+background:#0b1a33;
 font-family:Arial;
-background:#0f172a;
+margin:0;
 color:white;
 }
 
-header{
-background:#020617;
+.header{
+background:#081326;
 padding:15px;
 text-align:center;
 font-size:22px;
+font-weight:bold;
 }
 
 .login{
 padding:15px;
-background:#020617;
+text-align:center;
 }
 
-.login input{
-width:100%;
+input{
+width:90%;
+max-width:500px;
 padding:10px;
-margin:5px 0;
-border-radius:6px;
+margin:5px;
+border-radius:5px;
 border:none;
 }
 
-.login button{
-width:100%;
+button{
 padding:10px;
-background:#22c55e;
+width:90%;
+max-width:500px;
+background:#3fbf5f;
 border:none;
 color:white;
 font-size:16px;
-border-radius:6px;
+border-radius:5px;
 cursor:pointer;
 }
 
 .container{
 display:flex;
+height:80vh;
 }
 
 .channels{
-width:35%;
-background:#020617;
-height:80vh;
+width:30%;
 overflow:auto;
-padding:10px;
+background:#0f2344;
 }
 
 .player{
-width:65%;
-display:flex;
-justify-content:center;
-align-items:center;
+width:70%;
+padding:10px;
 }
 
 .channel{
-background:#1e293b;
 padding:10px;
-margin:6px 0;
-border-radius:6px;
+border-bottom:1px solid #1c3c6b;
 cursor:pointer;
 }
 
 .channel:hover{
-background:#334155;
+background:#1c3c6b;
 }
 
 video{
-width:95%;
+width:100%;
+height:60vh;
 background:black;
 }
 
@@ -92,15 +88,23 @@ background:black;
 
 <body>
 
-<header>EagleEyeDigits IPTV</header>
+<div class="header">
+EagleEyeDigits IPTV
+</div>
 
 <div class="login">
 
 <input id="server" placeholder="Server مثال: http://example.com:8080">
 
+<br>
+
 <input id="username" placeholder="Username">
 
+<br>
+
 <input id="password" placeholder="Password">
+
+<br>
 
 <button onclick="loadChannels()">تحميل القنوات</button>
 
@@ -111,9 +115,7 @@ background:black;
 <div class="channels" id="channelList"></div>
 
 <div class="player">
-
 <video id="video" controls autoplay></video>
-
 </div>
 
 </div>
@@ -131,16 +133,17 @@ server=document.getElementById("server").value
 username=document.getElementById("username").value
 password=document.getElementById("password").value
 
-let api=server+"/player_api.php?username="+username+"&password="+password+"&action=get_live_streams"
+let proxy="https://muddy-lab-a457.maq9801.workers.dev/?url="
+
+let api = proxy + encodeURIComponent(
+server + "/player_api.php?username=" + username + "&password=" + password + "&action=get_live_streams"
+)
 
 fetch(api)
-
 .then(response=>response.json())
-
 .then(data=>{
 
 channels=data
-
 displayChannels(data)
 
 })
@@ -177,7 +180,7 @@ function playChannel(id){
 
 let video=document.getElementById("video")
 
-let url=server+"/live/"+username+"/"+password+"/"+id+".m3u8"
+let url = server + "/live/" + username + "/" + password + "/" + id + ".m3u8"
 
 if(Hls.isSupported()){
 
@@ -198,5 +201,4 @@ video.src=url
 </script>
 
 </body>
-
 </html>
