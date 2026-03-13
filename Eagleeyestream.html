@@ -4,7 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>EagleEyeDigits IPTV</title>
 
@@ -50,7 +50,7 @@ border-radius:6px;
 cursor:pointer;
 }
 
-.layout{
+.container{
 display:flex;
 }
 
@@ -96,7 +96,7 @@ background:black;
 
 <div class="login">
 
-<input id="server" placeholder="Server URL مثال: http://example.com:8080">
+<input id="server" placeholder="Server مثال: http://example.com:8080">
 
 <input id="username" placeholder="Username">
 
@@ -106,7 +106,7 @@ background:black;
 
 </div>
 
-<div class="layout">
+<div class="container">
 
 <div class="channels" id="channelList"></div>
 
@@ -135,25 +135,25 @@ let api=server+"/player_api.php?username="+username+"&password="+password+"&acti
 
 fetch(api)
 
-.then(r=>r.json())
+.then(response=>response.json())
 
 .then(data=>{
 
 channels=data
 
-showChannels(data)
+displayChannels(data)
 
 })
 
 }
 
-function showChannels(list){
+function displayChannels(list){
 
 let box=document.getElementById("channelList")
 
 box.innerHTML=""
 
-list.slice(0,300).forEach(ch=>{
+list.slice(0,300).forEach(function(ch){
 
 let div=document.createElement("div")
 
@@ -199,146 +199,4 @@ video.src=url
 
 </body>
 
-</html></div>
-
-<script>
-
-const server="http://silka.m3um9xplus.org:2052"
-const username="40756292371865"
-const password="18994994491762"
-
-const proxy="https://muddy-lab-a457.maq9801.workers.dev/?url="
-
-const api=proxy+encodeURIComponent(
-server+"/player_api.php?username="+username+"&password="+password+"&action=get_live_streams"
-)
-
-let allChannels=[]
-
-fetch(api)
-.then(r=>r.json())
-.then(data=>{
-
-allChannels=data
-
-renderChannels(data)
-
-})
-.catch(()=>{
-
-document.getElementById("channels").innerHTML="فشل تحميل القنوات"
-
-})
-
-function renderChannels(list){
-
-let box=document.getElementById("channels")
-
-box.innerHTML=""
-
-list.slice(0,500).forEach(ch=>{
-
-let div=document.createElement("div")
-
-div.className="channel"
-
-div.innerText=ch.name
-
-div.onclick=()=>playChannel(ch.stream_id)
-
-box.appendChild(div)
-
-})
-
-}
-
-function playChannel(id){
-
-let url=server+"/live/"+username+"/"+password+"/"+id+".m3u8"
-
-let video=document.getElementById("video")
-
-if(Hls.isSupported()){
-
-let hls=new Hls()
-
-hls.loadSource(url)
-
-hls.attachMedia(video)
-
-}else{
-
-video.src=url
-
-}
-
-}
-
-document.getElementById("search").oninput=function(){
-
-let q=this.value.toLowerCase()
-
-let filtered=allChannels.filter(c=>c.name.toLowerCase().includes(q))
-
-renderChannels(filtered)
-
-}
-
-</script>
-
-</body>
-</html>
-box.innerHTML=""
-
-list.slice(0,200).forEach(ch=>{
-
-let div=document.createElement("div")
-
-div.className="channel"
-
-div.innerText=ch.name
-
-div.onclick=()=>play(ch.stream_id)
-
-box.appendChild(div)
-
-})
-
-}
-
-function play(id){
-
-let video=document.getElementById("video")
-
-let url=server+"/live/"+user+"/"+pass+"/"+id+".m3u8"
-
-if(Hls.isSupported()){
-
-let hls=new Hls()
-
-hls.loadSource(url)
-
-hls.attachMedia(video)
-
-}else{
-
-video.src=url
-
-}
-
-}
-
-document.getElementById("search").oninput=function(){
-
-let q=this.value.toLowerCase()
-
-let filtered=allChannels.filter(c=>c.name.toLowerCase().includes(q))
-
-render(filtered)
-
-}
-
-</script>
-
-</body>
 </html>
