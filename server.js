@@ -1,23 +1,5 @@
-import express from "express";
-import fetch from "node-fetch";
-import cors from "cors";
-
-const app = express();
-
-app.use(cors({
-  origin: "*"
-}));
-
-app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.send("Server running");
-});
-
 app.post("/generate", async (req, res) => {
-
   try {
-
     const prompt = req.body.prompt;
 
     const response = await fetch(
@@ -38,19 +20,14 @@ app.post("/generate", async (req, res) => {
 
     const data = await response.json();
 
+    // 👇 هذه السطور للتشخيص
+    console.log("API STATUS:", response.status);
+    console.log("API RESPONSE:", data);
+
     res.json(data);
 
   } catch (error) {
-
-    res.status(500).json({
-      error: "server error",
-      message: error.message
-    });
-
+    console.log("SERVER ERROR:", error);
+    res.status(500).json({ error: "generation failed" });
   }
-
-});
-
-app.listen(3000, () => {
-  console.log("Server running");
 });
