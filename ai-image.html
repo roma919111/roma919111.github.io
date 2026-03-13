@@ -3,7 +3,7 @@
 
 <head>
 <meta charset="UTF-8">
-<title>مولد الصور العربية</title>
+<title>مولد الصور بالذكاء الاصطناعي</title>
 
 <style>
 
@@ -71,16 +71,13 @@ async function generate(){
 let prompt = document.getElementById("prompt").value
 let text = document.getElementById("text").value
 
-let response = await fetch("https://roma919111githubio-production.up.railway.app/generate,{
+let response = await fetch("https://roma919111githubio-production.up.railway.app/generate",{
 method:"POST",
 headers:{
-"Content-Type":"application/json",
-"Authorization":"Bearer 048b77d1-38c3-4c88-a805-509a7989baf0"
+"Content-Type":"application/json"
 },
 body:JSON.stringify({
-model:"seedream-4.5",
-prompt:prompt,
-size:"1024x1024"
+prompt:prompt
 })
 })
 
