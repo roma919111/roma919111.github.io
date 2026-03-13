@@ -3,7 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>EagleEyeDigits IPTV</title>
 
@@ -16,67 +16,45 @@ margin:0;
 font-family:Arial;
 background:#0f172a;
 color:white;
-}
-
-.header{
 text-align:center;
-font-size:22px;
+}
+
+header{
+background:#020617;
 padding:15px;
-background:#020617;
+font-size:22px;
 }
 
-.container{
-display:flex;
-flex-wrap:wrap;
+#search{
+width:90%;
+padding:10px;
+margin:10px;
+border-radius:6px;
+border:none;
 }
 
-.categories{
-width:100%;
-max-height:200px;
+#channels{
+max-height:300px;
 overflow:auto;
-background:#020617;
 padding:10px;
 }
 
-.channels{
-width:40%;
-height:60vh;
-overflow:auto;
-background:#020617;
-padding:10px;
-}
-
-.player{
-width:60%;
-display:flex;
-align-items:center;
-justify-content:center;
-}
-
-.item{
+.channel{
 background:#1e293b;
-margin:6px 0;
 padding:10px;
+margin:6px;
 border-radius:6px;
 cursor:pointer;
 }
 
-.item:hover{
+.channel:hover{
 background:#334155;
 }
 
 video{
 width:95%;
-max-height:60vh;
+margin-top:10px;
 background:black;
-}
-
-.search{
-width:100%;
-padding:10px;
-margin-bottom:10px;
-border:none;
-border-radius:6px;
 }
 
 </style>
@@ -85,31 +63,15 @@ border-radius:6px;
 
 <body>
 
-<div class="header">
-EagleEyeDigits IPTV
+<header>EagleEyeDigits IPTV</header>
+
+<input id="search" placeholder="بحث عن قناة">
+
+<div id="channels">
+جاري تحميل القنوات...
 </div>
-
-<div class="container">
-
-<div class="categories" id="categories">
-جاري تحميل التصنيفات...
-</div>
-
-<div class="channels">
-
-<input class="search" id="search" placeholder="بحث عن قناة">
-
-<div id="channelList"></div>
-
-</div>
-
-<div class="player">
 
 <video id="video" controls autoplay></video>
-
-</div>
-
-</div>
 
 <script>
 
@@ -117,63 +79,31 @@ const server="http://silka.m3um9xplus.org:2052"
 const user="40756292371865"
 const pass="18994994491762"
 
-const api=server+"/player_api.php?username="+user+"&password="+pass
+const api=server+"/player_api.php?username="+user+"&password="+pass+"&action=get_live_streams"
 
-let channels=[]
+let allChannels=[]
 
-function loadCategories(){
-
-fetch(api+"&action=get_live_categories")
+fetch(api)
 .then(r=>r.json())
 .then(data=>{
 
-let box=document.getElementById("categories")
+allChannels=data
+
+render(data)
+
+})
+
+function render(list){
+
+let box=document.getElementById("channels")
 
 box.innerHTML=""
 
-data.forEach(cat=>{
+list.slice(0,200).forEach(ch=>{
 
 let div=document.createElement("div")
 
-div.className="item"
-
-div.innerText=cat.category_name
-
-div.onclick=()=>loadChannels(cat.category_id)
-
-box.appendChild(div)
-
-})
-
-})
-
-}
-
-function loadChannels(cat){
-
-fetch(api+"&action=get_live_streams&category_id="+cat)
-.then(r=>r.json())
-.then(data=>{
-
-channels=data
-
-renderChannels(data)
-
-})
-
-}
-
-function renderChannels(list){
-
-let box=document.getElementById("channelList")
-
-box.innerHTML=""
-
-list.forEach(ch=>{
-
-let div=document.createElement("div")
-
-div.className="item"
+div.className="channel"
 
 div.innerText=ch.name
 
@@ -211,224 +141,11 @@ document.getElementById("search").oninput=function(){
 
 let q=this.value.toLowerCase()
 
-let filtered=channels.filter(c=>c.name.toLowerCase().includes(q))
+let filtered=allChannels.filter(c=>c.name.toLowerCase().includes(q))
 
-renderChannels(filtered)
-
-}
-
-loadCategories()
-
-</script>
-
-</body>
-</html>
-<div class="container">
-
-<div class="categories" id="categories"></div>
-
-<div class="channels">
-
-<input class="search" id="search" placeholder="بحث عن قناة">
-
-<div id="channelList"></div>
-
-</div>
-
-<div class="player">
-
-<video id="video" controls autoplay></video>
-
-</div>
-
-</div>
-
-<script>
-
-const server="http://silka.m3um9xplus.org:2052"
-const user="40756292371865"
-const pass="18994994491762"
-
-const api=server+"/player_api.php?username="+user+"&password="+pass
-
-let channels=[]
-
-function loadCategories(){
-
-fetch(api+"&action=get_live_categories")
-.then(r=>r.json())
-.then(data=>{
-
-let container=document.getElementById("categories")
-
-data.forEach(cat=>{
-
-let div=document.createElement("div")
-
-div.className="item"
-
-div.innerText=cat.category_name
-
-div.onclick=()=>loadChannels(cat.category_id)
-
-container.appendChild(div)
-
-})
-
-})
+render(filtered)
 
 }
-
-function loadChannels(cat){
-
-fetch(api+"&action=get_live_streams&category_id="+cat)
-.then(r=>r.json())
-.then(data=>{
-
-channels=data
-
-renderChannels(data)
-
-})
-
-}
-
-function renderChannels(list){
-
-let container=document.getElementById("channelList")
-
-container.innerHTML=""
-
-list.forEach(ch=>{
-
-let div=document.createElement("div")
-
-div.className="item"
-
-let img=document.createElement("img")
-
-img.src=ch.stream_icon
-
-img.className="logo"
-
-let span=document.createElement("span")
-
-span.innerText=ch.name
-
-div.appendChild(img)
-
-div.appendChild(span)
-
-div.onclick=()=>play(ch.stream_id)
-
-container.appendChild(div)
-
-})
-
-}
-
-function play(id){
-
-let url=server+"/live/"+user+"/"+pass+"/"+id+".m3u8"
-
-let video=document.getElementById("video")
-
-if(Hls.isSupported()){
-
-let hls=new Hls()
-
-hls.loadSource(url)
-
-hls.attachMedia(video)
-
-}else{
-
-video.src=url
-
-}
-
-}
-
-document.getElementById("search").oninput=function(){
-
-let q=this.value.toLowerCase()
-
-let filtered=channels.filter(c=>c.name.toLowerCase().includes(q))
-
-renderChannels(filtered)
-
-}
-
-loadCategories()
-
-</script>
-
-</body>
-</html>fetch(api+"&action=get_live_categories")
-.then(r=>r.json())
-.then(data=>{
-
-let container=document.getElementById("categories")
-
-data.forEach(cat=>{
-
-let div=document.createElement("div")
-
-div.className="item"
-
-div.innerText=cat.category_name
-
-div.onclick=()=>loadChannels(cat.category_id)
-
-container.appendChild(div)
-
-})
-
-})
-
-}
-
-function loadChannels(cat){
-
-fetch(api+"&action=get_live_streams&category_id="+cat)
-.then(r=>r.json())
-.then(data=>{
-
-let container=document.getElementById("channels")
-
-container.innerHTML=""
-
-data.forEach(ch=>{
-
-let div=document.createElement("div")
-
-div.className="item"
-
-div.innerText=ch.name
-
-div.onclick=()=>play(ch.stream_id)
-
-container.appendChild(div)
-
-})
-
-})
-
-}
-
-function play(id){
-
-let url=server+"/live/"+user+"/"+pass+"/"+id+".m3u8"
-
-let video=document.getElementById("video")
-
-video.src=url
-
-video.play()
-
-}
-
-loadCategories()
 
 </script>
 
