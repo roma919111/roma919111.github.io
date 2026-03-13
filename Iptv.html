@@ -1,3 +1,11 @@
+<br><br>
+
+<input type="text" id="m3uUrl" placeholder="ضع رابط m3u هنا" style="width:80%;padding:10px">
+
+<br><br>
+
+<button onclick="loadUrl()">تحميل الرابط</button>
+
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -128,3 +136,16 @@ video.src=url;
 
 </body>
 </html>
+function loadUrl(){
+
+let url = document.getElementById("m3uUrl").value;
+
+fetch(url)
+.then(response => response.text())
+.then(data => {
+
+loadM3U(data);
+
+});
+
+}
