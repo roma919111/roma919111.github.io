@@ -7,13 +7,12 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
-// اختبار السيرفر
 app.get("/", (req, res) => {
   res.send("Server running")
 })
 
-// توليد الصورة
 app.post("/generate", async (req, res) => {
+
   try {
 
     const prompt = req.body.prompt
@@ -40,23 +39,22 @@ app.post("/generate", async (req, res) => {
 
     const data = await response.json()
 
-    console.log("API STATUS:", response.status)
-    console.log("API RESPONSE:", data)
-
     res.json(data)
 
   } catch (error) {
 
-    console.log("SERVER ERROR:", error)
+    console.log(error)
 
     res.status(500).json({
       error: "generation failed"
     })
+
   }
+
 })
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log("Server running on port " + PORT)
 })
