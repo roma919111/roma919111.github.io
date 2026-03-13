@@ -9,116 +9,120 @@
 <style>
 
 body{
-font-family:Arial;
+font-family:Tahona;
+background:#f4f6fb;
 text-align:center;
-background:#f5f5f5;
-}
-
-video{
-width:90%;
-max-width:800px;
-margin-top:20px;
 }
 
 input{
 width:80%;
 padding:10px;
-margin-top:20px;
+margin:10px;
 }
 
 button{
 padding:10px 20px;
-margin-top:10px;
+background:#ff9800;
+border:none;
+color:white;
+cursor:pointer;
 }
 
-select{
+#channels{
+margin-top:20px;
+}
+
+.channel{
 padding:10px;
-margin-top:10px;
+border-bottom:1px solid #ddd;
+cursor:pointer;
+}
+
+video{
+width:80%;
+margin-top:20px;
 }
 
 </style>
-
 </head>
 
 <body>
 
 <h2>مشغل IPTV</h2>
 
-<input type="text" id="m3uUrl" placeholder="ضع رابط M3U هنا">
+<input type="text" id="m3uUrl" placeholder="ضع رابط playlist m3u">
 
 <br>
 
-<button onclick="loadUrl()">تحميل الرابط</button>
+<button onclick="loadPlaylist()">تحميل القنوات</button>
 
-<br><br>
+<div id="channels"></div>
 
-<select id="channels"></select>
-
-<br>
-
-<video id="video" controls autoplay></video>
+<video id="video" controls></video>
 
 <script>
 
-function loadUrl(){
+function loadPlaylist(){
 
 let url=document.getElementById("m3uUrl").value;
 
 fetch(url)
-.then(response=>response.text())
-.then(data=>{
-loadM3U(data);
-});
+.then(res=>res.text())
+.then(data=>parseM3U(data));
 
 }
 
-function loadM3U(data){
+function parseM3U(data){
 
 let lines=data.split("\n");
 
-let select=document.getElementById("channels");
+let channels=document.getElementById("channels");
 
-select.innerHTML="";
+channels.innerHTML="";
 
 for(let i=0;i<lines.length;i++){
 
-if(lines[i].startsWith("#EXTINF")){
+if(lines[i].includes("#EXTINF")){
 
 let name=lines[i].split(",")[1];
-let url=lines[i+1];
 
-let option=document.createElement("option");
+let link=lines[i+1];
 
-option.value=url.trim();
-option.text=name;
+let div=document.createElement("div");
 
-select.appendChild(option);
+div.className="channel";
+
+div.innerText=name;
+
+div.onclick=function(){
+
+playChannel(link);
+
+};
+
+channels.appendChild(div);
+
+}
 
 }
 
 }
 
-play(select.value);
-
-}
-
-document.getElementById("channels").onchange=function(){
-
-play(this.value);
-
-}
-
-function play(url){
+function playChannel(url){
 
 let video=document.getElementById("video");
 
 if(Hls.isSupported()){
 
 let hls=new Hls();
+
 hls.loadSource(url);
+
 hls.attachMedia(video);
 
-}else{
+}
+
+else{
 
 video.src=url;
 
