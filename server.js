@@ -1,9 +1,15 @@
 import express from "express";
 import fetch from "node-fetch";
+import cors from "cors";
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.send("Server running");
+});
 
 app.post("/generate", async (req, res) => {
 
