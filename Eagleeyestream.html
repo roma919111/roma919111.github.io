@@ -3,9 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<title>EagleEyeDigits HLS Player</title>
-
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<title>EagleEyeDigits IPTV</title>
 
 <style>
 
@@ -89,7 +87,7 @@ background:black;
 <body>
 
 <div class="header">
-EagleEyeDigits HLS IPTV
+EagleEyeDigits IPTV
 </div>
 
 <div class="login">
@@ -115,9 +113,7 @@ EagleEyeDigits HLS IPTV
 <div class="channels" id="channelList"></div>
 
 <div class="player">
-
 <video id="video" controls autoplay></video>
-
 </div>
 
 </div>
@@ -134,11 +130,19 @@ server=document.getElementById("server").value
 username=document.getElementById("username").value
 password=document.getElementById("password").value
 
-let api = server + "/player_api.php?username=" + username + "&password=" + password + "&action=get_live_streams"
+let proxy="https://muddy-lab-a457.maq9801.workers.dev/?url="
+
+let api = proxy + encodeURIComponent(
+server + "/player_api.php?username=" + username + "&password=" + password + "&action=get_live_streams"
+)
 
 fetch(api)
-.then(r=>r.json())
-.then(data=>displayChannels(data))
+.then(res=>res.json())
+.then(data=>{
+
+displayChannels(data)
+
+})
 
 }
 
@@ -168,21 +172,11 @@ function playChannel(id){
 
 let video=document.getElementById("video")
 
-let url = server + "/live/" + username + "/" + password + "/" + id + ".m3u8"
+let url = server + "/live/" + username + "/" + password + "/" + id + ".ts"
 
-if(Hls.isSupported()){
+video.src = url
 
-let hls=new Hls()
-
-hls.loadSource(url)
-
-hls.attachMedia(video)
-
-}else{
-
-video.src=url
-
-}
+video.play()
 
 }
 
