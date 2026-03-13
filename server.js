@@ -1,6 +1,24 @@
+import express from "express";
+import cors from "cors";
+import fetch from "node-fetch";
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.send("Server running");
+});
+
 app.post("/generate", async (req, res) => {
   try {
+
     const prompt = req.body.prompt;
+
+    if (!prompt) {
+      return res.status(400).json({ error: "prompt missing" });
+    }
 
     const response = await fetch(
       "https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
@@ -20,14 +38,24 @@ app.post("/generate", async (req, res) => {
 
     const data = await response.json();
 
-    // 👇 هذه السطور للتشخيص
     console.log("API STATUS:", response.status);
     console.log("API RESPONSE:", data);
 
     res.json(data);
 
   } catch (error) {
+
     console.log("SERVER ERROR:", error);
-    res.status(500).json({ error: "generation failed" });
+
+    res.status(500).json({
+      error: "generation failed"
+    });
+
   }
+});
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Server running on port " + PORT);
 });
