@@ -1,23 +1,25 @@
-import express from "express";
-import cors from "cors";
+import express from "express"
+import cors from "cors"
+import fetch from "node-fetch"
 
-const app = express();
+const app = express()
 
-app.use(cors());
-app.use(express.json());
+app.use(cors())
+app.use(express.json())
 
 // اختبار السيرفر
 app.get("/", (req, res) => {
-  res.send("Server running");
-});
+  res.send("Server running")
+})
 
 // توليد الصورة
 app.post("/generate", async (req, res) => {
   try {
-    const prompt = req.body.prompt;
+
+    const prompt = req.body.prompt
 
     if (!prompt) {
-      return res.status(400).json({ error: "prompt missing" });
+      return res.status(400).json({ error: "prompt missing" })
     }
 
     const response = await fetch(
@@ -26,7 +28,7 @@ app.post("/generate", async (req, res) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer 048b77d1-38c3-4c88-a805-509a7989baf0"
+          "Authorization": "Bearer 04bb7d1-38c3-4c88-a805-509a7989baf0"
         },
         body: JSON.stringify({
           model: "seedream-3.0",
@@ -34,24 +36,27 @@ app.post("/generate", async (req, res) => {
           size: "1024x1024"
         })
       }
-    );
+    )
 
-    const data = await response.json();
+    const data = await response.json()
 
-    console.log("API STATUS:", response.status);
-    console.log("API RESPONSE:", data);
+    console.log("API STATUS:", response.status)
+    console.log("API RESPONSE:", data)
 
-    res.json(data);
+    res.json(data)
 
   } catch (error) {
-    console.error("SERVER ERROR:", error);
-    res.status(500).json({ error: "generation failed" });
-  }
-});
 
-// تشغيل السيرفر
-const PORT = process.env.PORT || 3000;
+    console.log("SERVER ERROR:", error)
+
+    res.status(500).json({
+      error: "generation failed"
+    })
+  }
+})
+
+const PORT = process.env.PORT || 3000
 
 app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+  console.log("Server running on port " + PORT)
+})
