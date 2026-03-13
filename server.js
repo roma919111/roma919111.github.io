@@ -1,19 +1,19 @@
 import express from "express";
 import cors from "cors";
-import fetch from "node-fetch";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
+// اختبار السيرفر
 app.get("/", (req, res) => {
   res.send("Server running");
 });
 
+// توليد الصورة
 app.post("/generate", async (req, res) => {
   try {
-
     const prompt = req.body.prompt;
 
     if (!prompt) {
@@ -29,7 +29,7 @@ app.post("/generate", async (req, res) => {
           "Authorization": "Bearer 048b77d1-38c3-4c88-a805-509a7989baf0"
         },
         body: JSON.stringify({
-          model: "seedream-4.5",
+          model: "seedream-3.0",
           prompt: prompt,
           size: "1024x1024"
         })
@@ -44,16 +44,12 @@ app.post("/generate", async (req, res) => {
     res.json(data);
 
   } catch (error) {
-
-    console.log("SERVER ERROR:", error);
-
-    res.status(500).json({
-      error: "generation failed"
-    });
-
+    console.error("SERVER ERROR:", error);
+    res.status(500).json({ error: "generation failed" });
   }
 });
 
+// تشغيل السيرفر
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
