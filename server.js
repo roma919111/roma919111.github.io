@@ -4,7 +4,10 @@ import cors from "cors";
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: "*"
+}));
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -13,27 +16,38 @@ app.get("/", (req, res) => {
 
 app.post("/generate", async (req, res) => {
 
-  const prompt = req.body.prompt;
+  try {
 
-  const response = await fetch(
-    "https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer 048b77d1-38c3-4c88-a805-509a7989baf0"
-      },
-      body: JSON.stringify({
-        model: "seedream-4.5",
-        prompt: prompt,
-        size: "1024x1024"
-      })
-    }
-  );
+    const prompt = req.body.prompt;
 
-  const data = await response.json();
+    const response = await fetch(
+      "https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer 048b77d1-38c3-4c88-a805-509a7989baf0"
+        },
+        body: JSON.stringify({
+          model: "seedream-4.5",
+          prompt: prompt,
+          size: "1024x1024"
+        })
+      }
+    );
 
-  res.json(data);
+    const data = await response.json();
+
+    res.json(data);
+
+  } catch (error) {
+
+    res.status(500).json({
+      error: "server error",
+      message: error.message
+    });
+
+  }
 
 });
 
