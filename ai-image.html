@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar">
+
 <head>
 
 <meta charset="UTF-8">
@@ -24,14 +25,10 @@ max-width:700px;
 margin:auto;
 }
 
-h1{
-margin-bottom:20px;
-}
-
 textarea,input,select{
 width:100%;
 border:none;
-border-radius:12px;
+border-radius:10px;
 padding:14px;
 font-size:18px;
 margin-top:10px;
@@ -39,28 +36,14 @@ margin-top:10px;
 
 button{
 margin-top:15px;
-padding:12px 25px;
+padding:12px;
 background:#3b82f6;
 border:none;
 color:white;
 font-size:18px;
 border-radius:10px;
 cursor:pointer;
-}
-
-button:hover{
-background:#2563eb;
-}
-
-#status{
-margin-top:15px;
-font-size:18px;
-}
-
-#timer{
-margin-top:10px;
-font-size:16px;
-color:#ccc;
+width:100%;
 }
 
 .frame{
@@ -70,6 +53,7 @@ width:100%;
 aspect-ratio:1/1;
 overflow:hidden;
 border-radius:15px;
+background:#111;
 }
 
 .frame img{
@@ -82,23 +66,18 @@ object-fit:cover;
 position:absolute;
 width:100%;
 text-align:center;
-color:white;
 font-weight:900;
-text-shadow:0 0 15px rgba(0,0,0,0.9);
+font-size:40px;
+color:white;
+text-shadow:0 0 15px rgba(0,0,0,0.8);
 }
 
-.bottom{
-bottom:30px;
-}
+.top{ top:30px }
+.center{ top:50%; transform:translateY(-50%) }
+.bottom{ bottom:30px }
 
-.center{
-top:50%;
-transform:translateY(-50%);
-}
-
-.top{
-top:30px;
-}
+#timer{ margin-top:10px }
+#status{ margin-top:10px }
 
 </style>
 
@@ -145,9 +124,17 @@ top:30px;
 
 </div>
 
-<br>
-
 <button onclick="download()">تحميل الصورة</button>
+
+<hr style="margin:40px 0">
+
+<h3>تفعيل كود الرصيد</h3>
+
+<input id="code" placeholder="أدخل كود الرصيد">
+
+<button onclick="redeem()">تفعيل الكود</button>
+
+<div id="credits"></div>
 
 </div>
 
@@ -247,11 +234,57 @@ result.src=data.image
 
 status.innerText="تم إنشاء الصورة | الرصيد المتبقي: "+data.credits
 
+document.getElementById("credits").innerText="الرصيد الحالي: "+data.credits
+
 }catch(error){
 
 stopTimer()
 
-status.innerText="حدث خطأ بالاتصال بالسيرفر"
+status.innerText="خطأ في الاتصال بالسيرفر"
+
+}
+
+}
+
+async function redeem(){
+
+const code=document.getElementById("code").value
+const status=document.getElementById("status")
+
+status.innerText="جاري تفعيل الكود..."
+
+try{
+
+const response=await fetch(
+"https://roma919111githubio-production-06fe.up.railway.app/redeem",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+user:user,
+code:code
+})
+}
+)
+
+const data=await response.json()
+
+if(data.error){
+
+status.innerText=data.error
+return
+
+}
+
+document.getElementById("credits").innerText="الرصيد الحالي: "+data.credits
+
+status.innerText="تم تفعيل الكود"
+
+}catch(error){
+
+status.innerText="خطأ في الاتصال بالسيرفر"
 
 }
 
