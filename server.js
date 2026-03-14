@@ -1,6 +1,7 @@
 const express = require("express")
 const axios = require("axios")
 const cors = require("cors")
+const { createClient } = require("@supabase/supabase-js")
 
 const app = express()
 
@@ -9,54 +10,140 @@ app.use(cors())
 
 const API_KEY = process.env.API_KEY
 
+const supabase = createClient(
+process.env.SUPABASE_URL,
+process.env.SUPABASE_KEY
+)
 
-// اختبار السيرفر
-app.get("/", (req, res) => {
+
+
+app.get("/", (req,res)=>{
 res.send("AI Image Server Working")
 })
 
 
-// توليد صورة
-app.post("/generate", async (req, res) => {
 
-try {
+app.post("/redeem", async (req,res)=>{
 
-const prompt = req.body.prompt
+const {code,user} = req.body
+
+const {data,error} = await supabase
+.from("codes")
+.select("*")
+.eq("code",code)
+.single()
+
+if(!data || data.used){
+
+return res.json({
+success:false,
+message:"الكود غير صالح"
+})
+
+}
+
+await supabase
+.from("codes")
+.update({used:true})
+.eq("code",code)
+
+
+const {data:userData} = await supabase
+.from("users")
+.select("*")
+.eq("id",user)
+.single()
+
+
+if(!userData){
+
+await supabase
+.from("users")
+.insert({
+id:user,
+credits:data.credits
+})
+
+return res.json({
+credits:data.credits
+})
+
+}
+
+
+await supabase
+.from("users")
+.update({
+credits:userData.credits + data.credits
+})
+.eq("id",user)
+
+res.json({
+credits:userData.credits + data.credits
+})
+
+})
+
+
+
+app.post("/generate", async (req,res)=>{
+
+const {prompt,user} = req.body
+
+
+const {data:userData} = await supabase
+.from("users")
+.select("*")
+.eq("id",user)
+.single()
+
+
+if(!userData || userData.credits <= 0){
+
+return res.json({
+error:"لا يوجد رصيد"
+})
+
+}
+
 
 const response = await axios.post(
 "https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
 {
-model: "ep-20260227140001-vlp9z",
-prompt: prompt,
-size: "2K",
-response_format: "url",
-stream: false,
-watermark: true
+model:"ep-20260227140001-vlp9z",
+prompt:prompt,
+size:"2K",
+response_format:"url",
+stream:false,
+watermark:true
 },
 {
-headers: {
-Authorization: "Bearer " + API_KEY,
-"Content-Type": "application/json"
+headers:{
+Authorization:"Bearer "+API_KEY,
+"Content-Type":"application/json"
 }
 }
 )
 
-res.json(response.data)
 
-} catch (err) {
+await supabase
+.from("users")
+.update({
+credits:userData.credits - 1
+})
+.eq("id",user)
 
-console.log(err.response?.data || err.message)
 
 res.json({
-error: "generation failed"
+image:response.data.data[0].url,
+credits:userData.credits - 1
 })
 
-}
-
 })
+
 
 const PORT = process.env.PORT || 8080
 
-app.listen(PORT, () => {
-console.log("Server running on port " + PORT)
+app.listen(PORT,()=>{
+console.log("Server running")
 })
