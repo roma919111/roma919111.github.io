@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
+
 <meta charset="UTF-8">
 <title>مولد الصور بالذكاء الاصطناعي</title>
 
 <style>
 
 body{
-font-family: Arial, sans-serif;
+font-family: Arial;
 text-align:center;
 background:#111;
 color:white;
@@ -16,7 +17,7 @@ padding:40px;
 
 input{
 width:300px;
-padding:10px;
+padding:12px;
 margin:10px;
 border-radius:6px;
 border:none;
@@ -24,7 +25,7 @@ border:none;
 
 button{
 padding:12px 25px;
-background:#00c3ff;
+background:#00aaff;
 border:none;
 color:white;
 font-size:16px;
@@ -33,7 +34,7 @@ border-radius:6px;
 }
 
 button:hover{
-background:#0099cc;
+background:#0090cc;
 }
 
 #status{
@@ -53,7 +54,6 @@ display:none;
 #result{
 width:100%;
 border-radius:10px;
-display:block;
 }
 
 #overlayText{
@@ -64,7 +64,7 @@ transform:translateX(-50%);
 color:white;
 font-size:40px;
 font-weight:bold;
-text-shadow:0px 0px 10px rgba(0,0,0,0.8);
+text-shadow:2px 2px 10px rgba(0,0,0,0.8);
 width:90%;
 text-align:center;
 pointer-events:none;
@@ -77,10 +77,10 @@ pointer-events:none;
 
 <h2>🎨 مولد الصور بالذكاء الاصطناعي</h2>
 
-<input id="prompt" placeholder="اكتب وصف الصورة" />
+<input id="prompt" placeholder="اكتب وصف الصورة">
 <br>
 
-<input id="text" placeholder="اكتب النص العربي على الصورة" />
+<input id="text" placeholder="اكتب النص الذي سيظهر على الصورة">
 <br>
 
 <button onclick="generate()">إنشاء الصورة</button>
@@ -88,7 +88,7 @@ pointer-events:none;
 <div id="status"></div>
 
 <div id="resultBox">
-<img id="result" />
+<img id="result">
 <div id="overlayText"></div>
 </div>
 
@@ -105,41 +105,54 @@ const resultBox = document.getElementById("resultBox")
 const overlayText = document.getElementById("overlayText")
 
 if(!prompt){
-status.textContent="اكتب وصف الصورة أولاً"
+status.textContent = "اكتب وصف الصورة"
 return
 }
 
-status.textContent="جاري إنشاء الصورة..."
-resultBox.style.display="none"
+status.textContent = "جاري إنشاء الصورة..."
+resultBox.style.display = "none"
 
 try{
 
-const response = await fetch("https://roma919111githubio-production-06fe.up.railway.app/",{
+const response = await fetch(
+"https://roma919111githubio-production-06fe.up.railway.app/generate",
+{
 method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify({prompt:prompt})
+body:JSON.stringify({
+prompt:prompt
 })
+}
+)
 
 const data = await response.json()
 
-if(!data || !data.image){
-status.textContent="فشل توليد الصورة"
+console.log(data)
+
+const img =
+data?.data?.[0]?.url ||
+data?.data?.[0]?.image_url ||
+data?.data?.[0]?.image
+
+if(!img){
+status.textContent = "فشل توليد الصورة"
 return
 }
 
-result.src = data.image
+result.src = img
 overlayText.textContent = text
 
-resultBox.style.display="block"
-status.textContent="تم إنشاء الصورة بنجاح"
+resultBox.style.display = "block"
 
-}
-catch(error){
+status.textContent = "تم إنشاء الصورة"
+
+}catch(error){
 
 console.log(error)
-status.textContent="حدث خطأ في الاتصال بالسيرفر"
+
+status.textContent = "حدث خطأ بالاتصال بالسيرفر"
 
 }
 
