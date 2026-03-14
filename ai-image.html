@@ -22,7 +22,7 @@ padding:40px;
 textarea{
 width:90%;
 max-width:900px;
-height:100px;
+height:110px;
 padding:14px;
 margin:10px;
 border-radius:8px;
@@ -30,14 +30,6 @@ border:none;
 font-size:16px;
 resize:none;
 font-family:'Cairo',sans-serif;
-}
-
-input{
-width:300px;
-padding:12px;
-margin:10px;
-border-radius:6px;
-border:none;
 }
 
 button{
@@ -94,6 +86,13 @@ background:#1a1a1a;
 border-radius:10px;
 }
 
+input{
+padding:12px;
+width:250px;
+border:none;
+border-radius:6px;
+}
+
 .buyBtn{
 display:inline-block;
 margin-top:10px;
@@ -107,7 +106,6 @@ border-radius:6px;
 </style>
 
 </head>
-
 
 <body>
 
@@ -135,15 +133,17 @@ border-radius:6px;
 
 <div id="creditsDisplay">0</div>
 
-<input id="creditCode" placeholder="أدخل كود الرصيد">
-
 <br>
+
+<input id="creditCode" placeholder="ادخل كود الرصيد">
+
+<br><br>
 
 <button onclick="activateCode()">تفعيل الرصيد</button>
 
-<br>
+<br><br>
 
-<a class="buyBtn" href="https://YOUR-SALLA-STORE.com">شراء رصيد</a>
+<a class="buyBtn" href="https://tools.eagleeyedigits.com">شراء رصيد</a>
 
 </div>
 
@@ -152,7 +152,27 @@ border-radius:6px;
 
 let credits = Number(localStorage.getItem("credits") || 0)
 
+let usedCodes = JSON.parse(localStorage.getItem("usedCodes") || "[]")
+
 updateCredits()
+
+
+// قائمة كودات الرصيد
+
+const codes = {
+
+"EAGLE20-A7F3K":20,
+"EAGLE20-K9L2P":20,
+"EAGLE20-P8X4D":20,
+
+"EAGLE100-QW72K":100,
+"EAGLE100-MN92F":100,
+
+"EAGLE500-LS72K":500
+
+}
+
+
 
 function updateCredits(){
 
@@ -160,54 +180,76 @@ document.getElementById("creditsDisplay").innerText = credits
 
 }
 
+
+
+// تفعيل كود الرصيد
+
 function activateCode(){
 
 let code = document.getElementById("creditCode").value.trim()
 
-if(code=="CRED20"){
-credits += 20
+if(usedCodes.includes(code)){
+
+alert("تم استخدام هذا الكود سابقا")
+
+return
+
 }
 
-if(code=="CRED100"){
-credits += 100
-}
+if(codes[code]){
 
-if(code=="CRED500"){
-credits += 500
-}
+credits += codes[code]
+
+usedCodes.push(code)
 
 localStorage.setItem("credits",credits)
 
+localStorage.setItem("usedCodes",JSON.stringify(usedCodes))
+
 updateCredits()
 
-alert("تم إضافة الرصيد")
+alert("تم إضافة "+codes[code]+" رصيد")
+
+}else{
+
+alert("الكود غير صحيح")
 
 }
+
+}
+
+
+
+// توليد الصورة
 
 async function generate(){
 
 if(credits <= 0){
 
-alert("رصيدك انتهى. اشترِ باقة جديدة")
+alert("رصيدك انتهى. قم بشراء رصيد")
 
 return
 
 }
 
-const input=document.getElementById("prompt").value.trim()
+const input = document.getElementById("prompt").value.trim()
 
-const status=document.getElementById("status")
+const status = document.getElementById("status")
 
-const result=document.getElementById("result")
+const result = document.getElementById("result")
 
-const overlayText=document.getElementById("overlayText")
+const overlayText = document.getElementById("overlayText")
 
-const resultBox=document.getElementById("resultBox")
+const resultBox = document.getElementById("resultBox")
 
 if(!input){
+
 status.textContent="اكتب وصف الإعلان"
+
 return
+
 }
+
 
 let prompt=input
 let text=""
@@ -222,7 +264,8 @@ text=parts[1].trim()
 
 }
 
-const aiPrompt=`
+
+const aiPrompt = `
 
 professional advertising poster,
 
@@ -238,13 +281,15 @@ beautiful Arabic typography
 
 `
 
+
 status.textContent="جاري إنشاء الإعلان..."
 
 resultBox.style.display="none"
 
+
 try{
 
-const response=await fetch(
+const response = await fetch(
 
 "https://roma919111githubio-production-06fe.up.railway.app/generate",
 
@@ -253,9 +298,7 @@ const response=await fetch(
 method:"POST",
 
 headers:{
-
 "Content-Type":"application/json"
-
 },
 
 body:JSON.stringify({prompt:aiPrompt})
@@ -264,15 +307,17 @@ body:JSON.stringify({prompt:aiPrompt})
 
 )
 
-const data=await response.json()
 
-const img=
+const data = await response.json()
+
+const img =
 
 data?.data?.[0]?.url ||
 
 data?.data?.[0]?.image_url ||
 
 data?.data?.[0]?.image
+
 
 if(!img){
 
@@ -282,13 +327,15 @@ return
 
 }
 
-result.src=img
 
-overlayText.textContent=text
+result.src = img
+
+overlayText.textContent = text
 
 resultBox.style.display="block"
 
 status.textContent="تم إنشاء الإعلان"
+
 
 credits--
 
@@ -308,286 +355,4 @@ status.textContent="حدث خطأ بالاتصال بالسيرفر"
 
 </body>
 
-</html><div id="resultBox">
-
-<img id="result">
-
-<div id="overlayText"></div>
-
-</div>
-
-
-<script>
-
-async function generate(){
-
-const input=document.getElementById("prompt").value.trim()
-
-const status=document.getElementById("status")
-const result=document.getElementById("result")
-const overlayText=document.getElementById("overlayText")
-const resultBox=document.getElementById("resultBox")
-
-if(!input){
-status.textContent="اكتب وصف الإعلان"
-return
-}
-
-let prompt=input
-let text=""
-
-if(input.includes("عبارة")){
-
-const parts=input.split("عبارة")
-
-prompt=parts[0].trim()
-
-text=parts[1].trim()
-
-}
-
-const aiPrompt=`
-
-professional advertising poster,
-
-${prompt},
-
-cinematic lighting,
-
-premium marketing style,
-
-Arabic calligraphy text saying "${text}",
-
-beautiful Arabic typography
-
-`
-
-status.textContent="جاري إنشاء الإعلان..."
-
-resultBox.style.display="none"
-
-try{
-
-const response=await fetch(
-
-"https://roma919111githubio-production-06fe.up.railway.app/generate",
-
-{
-
-method:"POST",
-
-headers:{
-
-"Content-Type":"application/json"
-
-},
-
-body:JSON.stringify({prompt:aiPrompt})
-
-}
-
-)
-
-const data=await response.json()
-
-const img=
-
-data?.data?.[0]?.url ||
-
-data?.data?.[0]?.image_url ||
-
-data?.data?.[0]?.image
-
-if(!img){
-
-status.textContent="فشل توليد الصورة"
-
-return
-
-}
-
-result.src=img
-
-overlayText.textContent=text
-
-resultBox.style.display="block"
-
-status.textContent="تم إنشاء الإعلان"
-
-}catch(e){
-
-status.textContent="حدث خطأ بالاتصال بالسيرفر"
-
-}
-
-}
-
-</script>
-
-</body>
-
-</html><img id="result">
-
-<div id="overlayText"></div>
-
-</div>
-
-
-<script>
-
-async function generate(){
-
-const input=document.getElementById("prompt").value.trim()
-
-const status=document.getElementById("status")
-const result=document.getElementById("result")
-const resultBox=document.getElementById("resultBox")
-const overlayText=document.getElementById("overlayText")
-
-if(!input){
-status.textContent="اكتب وصف الإعلان"
-return
-}
-
-let prompt=input
-let text=""
-
-if(input.includes("عبارة")){
-const parts=input.split("عبارة")
-prompt=parts[0].trim()
-text=parts[1].trim()
-}
-
-status.textContent="جاري إنشاء الصورة..."
-
-resultBox.style.display="none"
-
-try{
-
-const response=await fetch(
-"https://roma919111githubio-production-06fe.up.railway.app/generate",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({prompt:prompt})
-}
-)
-
-const data=await response.json()
-
-console.log(data)
-
-const img=
-data?.data?.[0]?.url||
-data?.data?.[0]?.image_url||
-data?.data?.[0]?.image
-
-if(!img){
-status.textContent="فشل توليد الصورة"
-return
-}
-
-result.src=img
-
-overlayText.textContent=text
-
-resultBox.style.display="block"
-
-status.textContent="تم إنشاء الإعلان"
-
-}catch(error){
-
-console.log(error)
-
-status.textContent="حدث خطأ بالاتصال بالسيرفر"
-
-}
-
-}
-
-</script>
-
-
-</body>
-</html>
-<script>
-
-async function generate(){
-
-const input = document.getElementById("prompt").value.trim()
-
-const status = document.getElementById("status")
-const result = document.getElementById("result")
-const resultBox = document.getElementById("resultBox")
-const overlayText = document.getElementById("overlayText")
-
-if(!input){
-status.textContent="اكتب وصف الإعلان"
-return
-}
-
-let prompt = input
-let text = ""
-
-if(input.includes("عبارة")){
-const parts = input.split("عبارة")
-prompt = parts[0].trim()
-text = parts[1].trim()
-}
-
-status.textContent="جاري إنشاء الصورة..."
-
-resultBox.style.display="none"
-
-try{
-
-const response = await fetch(
-"https://roma919111githubio-production-06fe.up.railway.app/generate",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({prompt:prompt})
-}
-)
-
-const data = await response.json()
-
-console.log(data)
-
-const img =
-data?.data?.[0]?.url ||
-data?.data?.[0]?.image_url ||
-data?.data?.[0]?.image
-
-if(!img){
-status.textContent="فشل توليد الصورة"
-return
-}
-
-result.src = img
-
-overlayText.textContent = text
-
-resultBox.style.display="block"
-
-status.textContent="تم إنشاء الإعلان"
-
-}catch(error){
-
-console.log(error)
-
-status.textContent="حدث خطأ بالاتصال بالسيرفر"
-
-}
-
-}
-
-</script>
-
-
-</body>
 </html>
