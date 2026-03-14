@@ -22,6 +22,7 @@ app.get("/", (req, res) => {
 
 
 
+
 // تفعيل كود الرصيد
 app.post("/redeem", async (req, res) => {
 
@@ -29,14 +30,18 @@ app.post("/redeem", async (req, res) => {
 
     const { user, code } = req.body
 
-    const { data: codeData } = await supabase
+    const { data: codeData, error: codeError } = await supabase
       .from("codes")
       .select("*")
       .eq("code", code)
       .single()
 
-    if (!codeData || codeData.used) {
-      return res.json({ error: "الكود غير صالح" })
+    if (codeError || !codeData) {
+      return res.json({ error: "invalid code" })
+    }
+
+    if (codeData.used) {
+      return res.json({ error: "code already used" })
     }
 
     await supabase
@@ -61,7 +66,9 @@ app.post("/redeem", async (req, res) => {
           credits: codeData.credits
         })
 
-      return res.json({ credits: codeData.credits })
+      return res.json({
+        credits: codeData.credits
+      })
     }
 
 
@@ -69,15 +76,22 @@ app.post("/redeem", async (req, res) => {
 
     await supabase
       .from("users")
-      .update({ credits: newCredits })
+      .update({
+        credits: newCredits
+      })
       .eq("id", user)
 
-    res.json({ credits: newCredits })
+    res.json({
+      credits: newCredits
+    })
 
   } catch (err) {
 
     console.log(err)
-    res.json({ error: "redeem failed" })
+
+    res.json({
+      error: "redeem failed"
+    })
 
   }
 
@@ -86,7 +100,8 @@ app.post("/redeem", async (req, res) => {
 
 
 
-// توليد صورة مع خصم رصيد
+
+// توليد الصورة
 app.post("/generate", async (req, res) => {
 
   try {
@@ -100,7 +115,9 @@ app.post("/generate", async (req, res) => {
       .single()
 
     if (!userData || userData.credits <= 0) {
-      return res.json({ error: "لا يوجد رصيد" })
+      return res.json({
+        error: "no credits"
+      })
     }
 
 
@@ -110,9 +127,7 @@ app.post("/generate", async (req, res) => {
         model: "ep-20260227140001-vlp9z",
         prompt: prompt,
         size: "2K",
-        response_format: "url",
-        stream: false,
-        watermark: true
+        response_format: "url"
       },
       {
         headers: {
@@ -127,7 +142,9 @@ app.post("/generate", async (req, res) => {
 
     await supabase
       .from("users")
-      .update({ credits: newCredits })
+      .update({
+        credits: newCredits
+      })
       .eq("id", user)
 
 
@@ -150,58 +167,11 @@ app.post("/generate", async (req, res) => {
 
 
 
+
 const PORT = process.env.PORT || 8080
 
 app.listen(PORT, () => {
+
   console.log("Server running on port " + PORT)
-})
 
-if(!userData || userData.credits <= 0){
-
-return res.json({
-error:"لا يوجد رصيد"
-})
-
-}
-
-
-const response = await axios.post(
-"https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
-{
-model:"ep-20260227140001-vlp9z",
-prompt:prompt,
-size:"2K",
-response_format:"url",
-stream:false,
-watermark:true
-},
-{
-headers:{
-Authorization:"Bearer "+API_KEY,
-"Content-Type":"application/json"
-}
-}
-)
-
-
-await supabase
-.from("users")
-.update({
-credits:userData.credits - 1
-})
-.eq("id",user)
-
-
-res.json({
-image:response.data.data[0].url,
-credits:userData.credits - 1
-})
-
-})
-
-
-const PORT = process.env.PORT || 8080
-
-app.listen(PORT,()=>{
-console.log("Server running")
 })
