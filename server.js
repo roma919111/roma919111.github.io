@@ -10,12 +10,12 @@ app.use(express.json())
 // API KEY
 const API_KEY = process.env.ARK_API_KEY
 
-// credits
+// تخزين الرصيد
 let users = {
-  "user1": 5000
+  user1: 5000
 }
 
-// توليد الصورة
+// إنشاء الصورة
 app.post("/generate", async (req, res) => {
 
   try {
@@ -28,22 +28,20 @@ app.post("/generate", async (req, res) => {
       return res.json({ error: "لا يوجد رصيد كافي" })
     }
 
-    // تقليل الرصيد
+    // خصم صورة
     users[user] -= 1
 
-    // PROMPT احترافي للخط العربي
+    const arabicText = prompt.trim()
+
+    // PROMPT احترافي
     const finalPrompt = `
-luxury advertisement photo,
-high end commercial photography,
-product centered,
-clean background,
-professional lighting,
-Arabic calligraphy text "${prompt}",
-beautiful elegant Arabic typography,
-gold Arabic lettering,
-clear readable Arabic words,
-perfume advertisement design,
-premium marketing poster
+luxury perfume advertisement photo,
+premium commercial photography,
+perfume bottle centered,
+clean elegant background,
+beautiful gold arabic calligraphy saying "${arabicText}",
+professional perfume marketing poster,
+high end product photography
 `
 
     const response = await fetch(
@@ -57,12 +55,17 @@ premium marketing poster
         body: JSON.stringify({
           model: "ep-20260227140001-vlp9z",
           prompt: finalPrompt,
-          size: "1024x1024"
+          size: "1024x1024",
+          response_format: "url"
         })
       }
     )
 
     const data = await response.json()
+
+    if (!data.data || !data.data[0]) {
+      return res.json({ error: "فشل توليد الصورة" })
+    }
 
     const image = data.data[0].url
 
@@ -73,13 +76,15 @@ premium marketing poster
 
   } catch (err) {
 
-    res.json({ error: "خطأ في إنشاء الصورة" })
+    res.json({
+      error: "حدث خطأ في السيرفر"
+    })
 
   }
 
 })
 
-// تفعيل الكود
+// تفعيل كود الرصيد
 app.post("/redeem", (req, res) => {
 
   const { user, code } = req.body
@@ -97,5 +102,5 @@ app.post("/redeem", (req, res) => {
 })
 
 app.listen(3000, () => {
-  console.log("server running")
+  console.log("server running on port 3000")
 })
