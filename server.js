@@ -14,42 +14,29 @@ const SUPABASE_KEY = process.env.SUPABASE_KEY
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
+
+// اختبار السيرفر
 app.get("/", (req, res) => {
   res.send("AI server working")
 })
 
-app.get("/credits/:user", async (req, res) => {
-  try {
-    const user = req.params.user
 
-    const { data: userData } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", user)
-      .single()
 
-    if (!userData) {
-      return res.json({ credits: 0 })
-    }
 
-    res.json({ credits: userData.credits })
-  } catch (err) {
-    console.log(err)
-    res.json({ credits: 0 })
-  }
-})
-
+// تفعيل كود الرصيد
 app.post("/redeem", async (req, res) => {
+
   try {
+
     const { user, code } = req.body
 
-    const { data: codeData, error } = await supabase
+    const { data: codeData, error: codeError } = await supabase
       .from("codes")
       .select("*")
       .eq("code", code)
       .single()
 
-    if (error || !codeData) {
+    if (codeError || !codeData) {
       return res.json({ error: "invalid code" })
     }
 
@@ -62,13 +49,16 @@ app.post("/redeem", async (req, res) => {
       .update({ used: true })
       .eq("code", code)
 
+
     const { data: userData } = await supabase
       .from("users")
       .select("*")
       .eq("id", user)
       .single()
 
+
     if (!userData) {
+
       await supabase
         .from("users")
         .insert({
@@ -76,55 +66,13 @@ app.post("/redeem", async (req, res) => {
           credits: codeData.credits
         })
 
-      return res.json({ credits: codeData.credits })
+      return res.json({
+        credits: codeData.credits
+      })
     }
+
 
     const newCredits = userData.credits + codeData.credits
-
-    await supabase
-      .from("users")
-      .update({ credits: newCredits })
-      .eq("id", user)
-
-    res.json({ credits: newCredits })
-  } catch (err) {
-    console.log(err)
-    res.json({ error: "redeem failed" })
-  }
-})
-
-app.post("/generate", async (req, res) => {
-  try {
-    const { prompt, user, size } = req.body
-
-    const { data: userData } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", user)
-      .single()
-
-    if (!userData || userData.credits <= 0) {
-      return res.json({ error: "no credits" })
-    }
-
-    const response = await axios.post(
-      "https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
-      {
-        model: "ep-20260227140001-vlp9z",
-        prompt: prompt,
-        size: size || "1024x1024",
-        response_format: "url"
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      }
-    )
-
-    const imageUrl = response.data.data[0].url
-    const newCredits = userData.credits - 1
 
     await supabase
       .from("users")
@@ -134,22 +82,19 @@ app.post("/generate", async (req, res) => {
       .eq("id", user)
 
     res.json({
-      image: imageUrl,
       credits: newCredits
     })
+
   } catch (err) {
-    console.log(err.response?.data || err.message)
+
+    console.log(err)
+
     res.json({
-      error: "generation failed"
+      error: "redeem failed"
     })
+
   }
-})
 
-const PORT = process.env.PORT || 8080
-
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT)
-})
 })
 
 
@@ -161,103 +106,7 @@ app.post("/generate", async (req, res) => {
 
   try {
 
-    const { prompt, user, size } = req.body
-
-
-
-    const { data: userData } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", user)
-      .single()
-
-
-
-    if (!userData || userData.credits <= 0) {
-
-      return res.json({ error: "no credits" })
-
-    }
-
-
-
-    const response = await axios.post(
-
-      "https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
-
-      {
-        model: "ep-20260227140001-vlp9z",
-        prompt: prompt,
-        size: size || "1024x1024",
-        response_format: "url"
-      },
-
-      {
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      }
-
-    )
-
-
-
-    const imageUrl = response.data.data[0].url
-
-
-
-    const newCredits = userData.credits - 1
-
-
-
-    await supabase
-      .from("users")
-      .update({
-        credits: newCredits
-      })
-      .eq("id", user)
-
-
-
-    res.json({
-
-      image: imageUrl,
-      credits: newCredits
-
-    })
-
-  }
-
-  catch (err) {
-
-    console.log(err.response?.data || err.message)
-
-    res.json({
-
-      error: "generation failed"
-
-    })
-
-  }
-
-})
-
-
-
-
-
-const PORT = process.env.PORT || 8080
-
-
-app.listen(PORT, () => {
-
-  console.log("Server running on port " + PORT)
-
-})
-  try {
-
-    const { prompt, user } = req.body
+    const { prompt, user, size } = req.body   // ⭐ التعديل هنا
 
     const { data: userData } = await supabase
       .from("users")
@@ -277,7 +126,7 @@ app.listen(PORT, () => {
       {
         model: "ep-20260227140001-vlp9z",
         prompt: prompt,
-        size: "2K",
+        size: size || "2K",   // ⭐ استخدام المقاس من الواجهة
         response_format: "url"
       },
       {
