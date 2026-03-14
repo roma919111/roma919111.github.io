@@ -1,14 +1,16 @@
 const express = require("express")
 const axios = require("axios")
+const cors = require("cors")
 
 const app = express()
 
 app.use(express.json())
+app.use(cors())
 
 // ضع مفتاح Seedance هنا
 const API_KEY = "04bb7d1-38c3-4c88-a805-509a7989baf0"
 
-// صفحة اختبار
+// اختبار السيرفر
 app.get("/", (req,res)=>{
 res.send("AI Image Server Working")
 })
@@ -29,7 +31,7 @@ size:"1024x1024"
 },
 {
 headers:{
-"Authorization":"Bearer "04bb7d1-38c3-4c88-a805-509a7989baf0,
+Authorization:"Bearer "+API_KEY,
 "Content-Type":"application/json"
 }
 }
