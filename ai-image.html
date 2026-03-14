@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="ar">
+
 <head>
 
 <meta charset="UTF-8">
-<title>AI Image Generator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>مولد الصور بالذكاء الاصطناعي</title>
 
 <style>
 
 body{
-font-family:Arial;
-background:#0f172a;
+background:#0b1a3a;
 color:white;
+font-family:Arial;
 text-align:center;
 padding:40px;
 }
@@ -19,32 +22,37 @@ textarea{
 width:90%;
 max-width:700px;
 height:120px;
-border-radius:8px;
+border-radius:10px;
 border:none;
-padding:10px;
-font-size:16px;
+padding:15px;
+font-size:18px;
 }
 
 button{
-margin-top:10px;
-padding:10px 25px;
+margin-top:15px;
+padding:12px 25px;
 background:#3b82f6;
 border:none;
 color:white;
-font-size:16px;
-border-radius:6px;
+font-size:18px;
+border-radius:8px;
 cursor:pointer;
+}
+
+button:hover{
+background:#2563eb;
 }
 
 #status{
 margin-top:15px;
-color:#ccc;
+font-size:16px;
+color:#ddd;
 }
 
 img{
-margin-top:20px;
+margin-top:25px;
 max-width:500px;
-border-radius:10px;
+border-radius:12px;
 }
 
 </style>
@@ -55,7 +63,7 @@ border-radius:10px;
 
 <h2>🎨 مولد الصور بالذكاء الاصطناعي</h2>
 
-<textarea id="prompt" placeholder="اكتب وصف الصورة"></textarea>
+<textarea id="prompt" placeholder="اكتب وصف الصورة هنا"></textarea>
 
 <br>
 
@@ -70,9 +78,7 @@ border-radius:10px;
 async function generate(){
 
 const prompt = document.getElementById("prompt").value
-
 const status = document.getElementById("status")
-
 const result = document.getElementById("result")
 
 status.innerText="جاري إنشاء الصورة..."
@@ -80,7 +86,7 @@ status.innerText="جاري إنشاء الصورة..."
 try{
 
 const response = await fetch(
-"https://ubio-production-06fe.up.railway.app/generate",
+"https://roma919111githubio-production-06fe.up.railway.app/generate",
 {
 method:"POST",
 headers:{
