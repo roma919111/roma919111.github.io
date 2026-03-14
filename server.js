@@ -1,57 +1,64 @@
-const express = require("express")
-const axios = require("axios")
-const cors = require("cors")
+import express from "express"
+import cors from "cors"
+import axios from "axios"
 
 const app = express()
 
-app.use(express.json())
 app.use(cors())
+app.use(express.json())
 
-// قراءة API KEY من Railway
-const API_KEY = process.env.API_KEY
-
-
-// اختبار السيرفر
-app.get("/", (req,res)=>{
-res.send("AI Image Server Working")
-})
+// API KEY الخاص بك
+const API_KEY = process.env.ARK_API_KEY
 
 
-// توليد صورة
+// تخزين أكواد الرصيد
+
+const codes = {
+
+"EAGLE20-A7F3K":{credits:20, used:false},
+
+"EAGLE100-QW72K":{credits:100, used:false},
+
+"EAGLE500-LS72K":{credits:500, used:false}
+
+}
+
+
+// توليد الصور
+
 app.post("/generate", async (req,res)=>{
 
 try{
 
-const prompt = req.body.prompt
+const {prompt} = req.body
 
-const response = await axios.post(
-"https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
-{
-model: "ep-20260227140001-vlp9z",
-prompt: prompt,
-sequential_image_generation: "disabled",
-response_format: "url",
-size: "2K",
-stream: false,
-watermark: false
-},
-{
+const response = await axios({
+
+method:"POST",
+
+url:"https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
+
 headers:{
-Authorization:`Bearer ${API_KEY}`,
+"Authorization":`Bearer ${API_KEY}`,
 "Content-Type":"application/json"
+},
+
+data:{
+model:"ep-20260227140001-vlp9z",
+prompt:prompt,
+size:"1024x1024"
 }
-}
-)
+
+})
 
 res.json(response.data)
 
 }catch(err){
 
-console.log("IMAGE ERROR")
 console.log(err.response?.data || err.message)
 
-res.json({
-error:"generation failed"
+res.status(500).json({
+error:"generation_failed"
 })
 
 }
@@ -59,50 +66,46 @@ error:"generation failed"
 })
 
 
+// تفعيل كود الرصيد
 
-// استقبال Webhook من سلة
-app.post("/webhook",(req,res)=>{
+app.post("/activate-code",(req,res)=>{
 
-console.log("====== SALLA WEBHOOK RECEIVED ======")
+const {code} = req.body
 
-console.log(JSON.stringify(req.body,null,2))
+if(!codes[code]){
 
-// استخراج معلومات الطلب
-const order = req.body.data || {}
-
-const email = order.customer?.email || "unknown"
-
-const items = order.items || []
-
-let credits = 0
-
-items.forEach(item=>{
-
-const name = item.name || ""
-
-if(name.includes("20")) credits += 20
-if(name.includes("100")) credits += 100
-if(name.includes("500")) credits += 500
-
+return res.json({
+success:false,
+message:"الكود غير صحيح"
 })
 
-console.log("Customer Email:",email)
-console.log("Credits To Add:",credits)
+}
 
+if(codes[code].used){
 
-// هنا لاحقاً سنضيف قاعدة بيانات للرصيد
-
-res.send("ok")
-
+return res.json({
+success:false,
+message:"تم استخدام الكود سابقاً"
 })
 
+}
+
+codes[code].used = true
+
+return res.json({
+success:true,
+credits:codes[code].credits
+})
+
+})
 
 
 // تشغيل السيرفر
+
 const PORT = process.env.PORT || 8080
 
 app.listen(PORT,()=>{
 
-console.log("Server running on port "+PORT)
+console.log("AI server working on port",PORT)
 
 })
