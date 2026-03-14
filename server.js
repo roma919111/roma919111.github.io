@@ -15,11 +15,13 @@ const SUPABASE_KEY = process.env.SUPABASE_KEY
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
 
+
 // اختبار السيرفر
 app.get("/", (req, res) => {
-  res.send("AI server working")
-})
 
+  res.send("AI server working")
+
+})
 
 
 
@@ -30,19 +32,24 @@ app.post("/redeem", async (req, res) => {
 
     const { user, code } = req.body
 
-    const { data: codeData, error: codeError } = await supabase
+    const { data: codeData, error } = await supabase
       .from("codes")
       .select("*")
       .eq("code", code)
       .single()
 
-    if (codeError || !codeData) {
+    if (error || !codeData) {
+
       return res.json({ error: "invalid code" })
+
     }
 
     if (codeData.used) {
+
       return res.json({ error: "code already used" })
+
     }
+
 
     await supabase
       .from("codes")
@@ -50,11 +57,13 @@ app.post("/redeem", async (req, res) => {
       .eq("code", code)
 
 
+
     const { data: userData } = await supabase
       .from("users")
       .select("*")
       .eq("id", user)
       .single()
+
 
 
     if (!userData) {
@@ -66,13 +75,14 @@ app.post("/redeem", async (req, res) => {
           credits: codeData.credits
         })
 
-      return res.json({
-        credits: codeData.credits
-      })
+      return res.json({ credits: codeData.credits })
+
     }
 
 
+
     const newCredits = userData.credits + codeData.credits
+
 
     await supabase
       .from("users")
@@ -81,17 +91,16 @@ app.post("/redeem", async (req, res) => {
       })
       .eq("id", user)
 
-    res.json({
-      credits: newCredits
-    })
 
-  } catch (err) {
+    res.json({ credits: newCredits })
+
+  }
+
+  catch (err) {
 
     console.log(err)
 
-    res.json({
-      error: "redeem failed"
-    })
+    res.json({ error: "redeem failed" })
 
   }
 
@@ -104,6 +113,102 @@ app.post("/redeem", async (req, res) => {
 // توليد الصورة
 app.post("/generate", async (req, res) => {
 
+  try {
+
+    const { prompt, user, size } = req.body
+
+
+
+    const { data: userData } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", user)
+      .single()
+
+
+
+    if (!userData || userData.credits <= 0) {
+
+      return res.json({ error: "no credits" })
+
+    }
+
+
+
+    const response = await axios.post(
+
+      "https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
+
+      {
+        model: "ep-20260227140001-vlp9z",
+        prompt: prompt,
+        size: size || "1024x1024",
+        response_format: "url"
+      },
+
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+
+    )
+
+
+
+    const imageUrl = response.data.data[0].url
+
+
+
+    const newCredits = userData.credits - 1
+
+
+
+    await supabase
+      .from("users")
+      .update({
+        credits: newCredits
+      })
+      .eq("id", user)
+
+
+
+    res.json({
+
+      image: imageUrl,
+      credits: newCredits
+
+    })
+
+  }
+
+  catch (err) {
+
+    console.log(err.response?.data || err.message)
+
+    res.json({
+
+      error: "generation failed"
+
+    })
+
+  }
+
+})
+
+
+
+
+
+const PORT = process.env.PORT || 8080
+
+
+app.listen(PORT, () => {
+
+  console.log("Server running on port " + PORT)
+
+})
   try {
 
     const { prompt, user } = req.body
