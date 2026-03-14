@@ -1,19 +1,21 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 
 <head>
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>مولد الصور  </title>
+<title>مولد الصور بالذكاء الاصطناعي</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 
 body{
 background:#081633;
 color:white;
-font-family:Arial;
+font-family:'Cairo',sans-serif;
 text-align:center;
 padding:30px;
 }
@@ -25,6 +27,7 @@ margin:auto;
 
 h1{
 margin-bottom:20px;
+font-size:32px;
 }
 
 .image-box{
@@ -46,7 +49,6 @@ height:700px;
 width:100%;
 height:100%;
 object-fit:cover;
-object-position:center;
 display:block;
 }
 
@@ -57,6 +59,7 @@ border-radius:12px;
 border:none;
 padding:15px;
 font-size:18px;
+font-family:'Cairo',sans-serif;
 }
 
 select{
@@ -66,6 +69,7 @@ padding:12px;
 border-radius:10px;
 border:none;
 font-size:16px;
+font-family:'Cairo',sans-serif;
 }
 
 button{
@@ -78,6 +82,7 @@ font-size:18px;
 border-radius:10px;
 cursor:pointer;
 width:100%;
+font-family:'Cairo',sans-serif;
 }
 
 button:hover{
@@ -105,6 +110,7 @@ padding:12px;
 border-radius:8px;
 border:none;
 font-size:16px;
+font-family:'Cairo',sans-serif;
 }
 
 </style>
@@ -118,7 +124,7 @@ font-size:16px;
 <h1>🎨 مولد الصور بالذكاء الاصطناعي</h1>
 
 
-<!-- الصورة أولاً -->
+<!-- الصورة -->
 
 <div class="image-box">
 
@@ -129,7 +135,6 @@ font-size:16px;
 </div>
 
 </div>
-
 
 
 <textarea id="prompt" placeholder="اكتب وصف الصورة هنا"></textarea>
@@ -148,14 +153,12 @@ font-size:16px;
 </select>
 
 
-
 <button onclick="generate()">إنشاء الصورة</button>
 
 
 <div id="timer"></div>
 
 <div id="status"></div>
-
 
 
 <div class="input-code">
@@ -171,7 +174,6 @@ font-size:16px;
 </div>
 
 </div>
-
 
 
 <script>
@@ -202,7 +204,6 @@ function stopTimer(){
 clearInterval(timerInterval)
 
 }
-
 
 
 function setFrame(){
@@ -230,7 +231,7 @@ frame.style.height="700px"
 else if(type==="banner"){
 
 frame.style.width="900px"
-frame.style.height="350px"
+frame.style.height="506px"
 
 }
 
@@ -243,7 +244,6 @@ frame.style.height="700px"
 }
 
 }
-
 
 
 async function generate(){
@@ -296,7 +296,6 @@ stopTimer()
 if(data.error){
 
 status.innerText=data.error
-
 return
 
 }
@@ -317,7 +316,6 @@ status.innerText="حدث خطأ بالاتصال بالسيرفر"
 }
 
 }
-
 
 
 async function redeem(){
@@ -364,7 +362,6 @@ const data=await response.json()
 if(data.error){
 
 status.innerText=data.error
-
 return
 
 }
@@ -372,167 +369,6 @@ return
 
 status.innerText="تم إضافة الرصيد: "+data.credits
 
-
-}catch(error){
-
-status.innerText="خطأ في الاتصال بالسيرفر"
-
-}
-
-}
-
-</script>
-
-</body>
-</html>
-
-<script>
-
-const user="user1"
-
-let timerInterval
-let seconds=0
-
-
-function startTimer(){
-
-seconds=0
-
-timerInterval=setInterval(()=>{
-
-seconds++
-
-document.getElementById("timer").innerText="⏱ وقت الإنشاء: "+seconds+" ثانية"
-
-},1000)
-
-}
-
-
-function stopTimer(){
-
-clearInterval(timerInterval)
-
-}
-
-
-function setFrame(){
-
-const type=document.getElementById("size").value
-const frame=document.getElementById("frame")
-
-if(type==="square"){
-frame.style.width="500px"
-frame.style.height="500px"
-}
-
-else if(type==="story"){
-frame.style.width="400px"
-frame.style.height="700px"
-}
-
-else if(type==="banner"){
-frame.style.width="800px"
-frame.style.height="450px"
-}
-
-else{
-frame.style.width="700px"
-frame.style.height="700px"
-}
-
-}
-
-
-
-async function generate(){
-
-const prompt=document.getElementById("prompt").value
-const status=document.getElementById("status")
-const result=document.getElementById("result")
-
-setFrame()
-
-startTimer()
-
-status.innerText="جاري إنشاء الصورة..."
-
-try{
-
-const response=await fetch(
-"https://roma919111githubio-production-06fe.up.railway.app/generate",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-prompt:prompt,
-user:user
-})
-}
-)
-
-const data=await response.json()
-
-stopTimer()
-
-if(data.error){
-
-status.innerText=data.error
-return
-
-}
-
-result.src=data.image
-
-status.innerText="تم إنشاء الصورة | الرصيد المتبقي: "+data.credits
-
-}catch(error){
-
-stopTimer()
-
-status.innerText="حدث خطأ بالاتصال بالسيرفر"
-
-}
-
-}
-
-
-
-async function redeem(){
-
-const code=document.getElementById("code").value
-const status=document.getElementById("status")
-
-status.innerText="جاري تفعيل الكود..."
-
-try{
-
-const response=await fetch(
-"https://roma919111githubio-production-06fe.up.railway.app/redeem",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-user:user,
-code:code
-})
-}
-)
-
-const data=await response.json()
-
-if(data.error){
-
-status.innerText=data.error
-return
-
-}
-
-status.innerText="تم إضافة الرصيد: "+data.credits
 
 }catch(error){
 
