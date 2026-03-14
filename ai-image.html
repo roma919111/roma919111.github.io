@@ -4,40 +4,37 @@
 
 <meta charset="UTF-8">
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700&display=swap" rel="stylesheet">
-
 <title>مولد الإعلانات بالذكاء الاصطناعي</title>
 
 <style>
 
 body{
-font-family:'Cairo',sans-serif;
-text-align:center;
-background:#111;
+font-family:Arial;
+background:#0f172a;
 color:white;
+text-align:center;
 padding:40px;
 }
 
 textarea{
 width:90%;
-max-width:800px;
-height:100px;
-padding:12px;
-margin:10px;
+max-width:700px;
+height:120px;
 border-radius:8px;
 border:none;
+padding:10px;
 font-size:16px;
-resize:none;
 }
 
 button{
-padding:12px 25px;
-background:#00aaff;
+margin-top:10px;
+padding:10px 25px;
+background:#3b82f6;
 border:none;
 color:white;
 font-size:16px;
-cursor:pointer;
 border-radius:6px;
+cursor:pointer;
 }
 
 #status{
@@ -46,7 +43,7 @@ color:#ccc;
 }
 
 img{
-margin-top:25px;
+margin-top:20px;
 max-width:500px;
 border-radius:10px;
 }
@@ -59,7 +56,7 @@ border-radius:10px;
 
 <h2>🎨 مولد الإعلانات بالذكاء الاصطناعي</h2>
 
-<textarea id="prompt" placeholder="مثال: منزل فاخر"></textarea>
+<textarea id="prompt" placeholder="مثال: منزل فاخر مع عبارة مرحباً بكم"></textarea>
 
 <br>
 
@@ -67,19 +64,17 @@ border-radius:10px;
 
 <div id="status"></div>
 
-<img id="result">
+<img id="result"/>
 
 <script>
 
 async function generate(){
 
 const prompt = document.getElementById("prompt").value
-
 const status = document.getElementById("status")
-
 const result = document.getElementById("result")
 
-status.textContent="جاري إنشاء الصورة..."
+status.innerText="جاري إنشاء الصورة..."
 
 try{
 
@@ -98,15 +93,20 @@ prompt:prompt
 
 const data = await response.json()
 
-const img = data.data[0].url
+if(data.image){
 
-result.src = img
+result.src = data.image
+status.innerText="تم إنشاء الصورة"
 
-status.textContent="تم إنشاء الصورة"
+}else{
 
-}catch(err){
+status.innerText="لم يتم توليد الصورة"
 
-status.textContent="حدث خطأ بالاتصال بالسيرفر"
+}
+
+}catch(error){
+
+status.innerText="حدث خطأ بالاتصال بالسيرفر"
 
 }
 
