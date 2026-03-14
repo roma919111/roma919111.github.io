@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="ar">
+
 <head>
 
 <meta charset="UTF-8">
-<title>مولد الصور بالذكاء الاصطناعي</title>
+<title>مولد الإعلانات بالذكاء الاصطناعي</title>
 
 <style>
 
 body{
-font-family: Arial;
+font-family:Arial;
 text-align:center;
 background:#111;
 color:white;
@@ -16,7 +17,7 @@ padding:40px;
 }
 
 input{
-width:300px;
+width:350px;
 padding:12px;
 margin:10px;
 border-radius:6px;
@@ -71,46 +72,59 @@ pointer-events:none;
 }
 
 </style>
+
 </head>
+
 
 <body>
 
-<h2>🎨 مولد الصور بالذكاء الاصطناعي</h2>
+<h2>🎨 مولد الإعلانات بالذكاء الاصطناعي</h2>
 
-<input id="prompt" placeholder="اكتب وصف الصورة">
+<input id="prompt" placeholder="اكتب وصف الإعلان مثل: مطبخ فاخر مع عبارة أفضل المطابخ في الخليج">
+
 <br>
 
-<input id="text" placeholder="اكتب النص الذي سيظهر على الصورة">
-<br>
-
-<button onclick="generate()">إنشاء الصورة</button>
+<button onclick="generate()">إنشاء الإعلان</button>
 
 <div id="status"></div>
 
 <div id="resultBox">
+
 <img id="result">
+
 <div id="overlayText"></div>
+
 </div>
+
 
 <script>
 
 async function generate(){
 
-const prompt = document.getElementById("prompt").value.trim()
-const text = document.getElementById("text").value.trim()
+const input = document.getElementById("prompt").value.trim()
 
 const status = document.getElementById("status")
 const result = document.getElementById("result")
 const resultBox = document.getElementById("resultBox")
 const overlayText = document.getElementById("overlayText")
 
-if(!prompt){
-status.textContent = "اكتب وصف الصورة"
+if(!input){
+status.textContent="اكتب وصف الإعلان"
 return
 }
 
-status.textContent = "جاري إنشاء الصورة..."
-resultBox.style.display = "none"
+let prompt = input
+let text = ""
+
+if(input.includes("عبارة")){
+const parts = input.split("عبارة")
+prompt = parts[0].trim()
+text = parts[1].trim()
+}
+
+status.textContent="جاري إنشاء الصورة..."
+
+resultBox.style.display="none"
 
 try{
 
@@ -121,9 +135,7 @@ method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
-body:JSON.stringify({
-prompt:prompt
-})
+body:JSON.stringify({prompt:prompt})
 }
 )
 
@@ -137,28 +149,30 @@ data?.data?.[0]?.image_url ||
 data?.data?.[0]?.image
 
 if(!img){
-status.textContent = "فشل توليد الصورة"
+status.textContent="فشل توليد الصورة"
 return
 }
 
 result.src = img
+
 overlayText.textContent = text
 
-resultBox.style.display = "block"
+resultBox.style.display="block"
 
-status.textContent = "تم إنشاء الصورة"
+status.textContent="تم إنشاء الإعلان"
 
 }catch(error){
 
 console.log(error)
 
-status.textContent = "حدث خطأ بالاتصال بالسيرفر"
+status.textContent="حدث خطأ بالاتصال بالسيرفر"
 
 }
 
 }
 
 </script>
+
 
 </body>
 </html>
