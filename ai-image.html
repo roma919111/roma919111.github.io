@@ -67,7 +67,7 @@ margin-bottom:10px;
 #subtitle{
 
 font-weight:700;
-font-size:32px;
+font-size:30px;
 color:white;
 
 text-shadow:0 3px 8px rgba(0,0,0,0.8);
@@ -135,10 +135,7 @@ width:100%;
 
 </div>
 
-<textarea id="prompt" placeholder="اكتب بهذا الشكل:
-
-عطر فاخر
-ثبات يدوم طوال اليوم"></textarea>
+<textarea id="prompt" placeholder="اكتب وصف الإعلان هنا"></textarea>
 
 <select id="size">
 
@@ -229,14 +226,18 @@ updateOverlay()
 
 const promptFull=document.getElementById("prompt").value
 
-const lines=promptFull.split("\n")
+const words = promptFull.trim().split(" ")
 
-const description=lines[0] || ""
-const title=lines[1] || ""
-const subtitle=lines[2] || ""
+let title = ""
+let subtitle = ""
 
-document.getElementById("title").innerText=title
-document.getElementById("subtitle").innerText=subtitle
+title = words.slice(0,3).join(" ")
+subtitle = words.slice(3).join(" ")
+
+const description = promptFull
+
+document.getElementById("title").innerText = title
+document.getElementById("subtitle").innerText = subtitle
 
 const status=document.getElementById("status")
 const result=document.getElementById("result")
