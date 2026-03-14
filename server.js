@@ -31,13 +31,15 @@ headers:{
 "Authorization":`Bearer ${API_KEY}`
 },
 body:JSON.stringify({
+
 model:"ep-20260227140001-vlp9z",
-prompt:prompt,
-sequential_image_generation:"disabled",
-response_format:"url",
-size:"2K",
-stream:false,
-watermark:true
+
+input:{
+prompt:prompt
+},
+
+size:"2K"
+
 })
 }
 )
@@ -63,5 +65,5 @@ error:"generation failed"
 })
 
 app.listen(PORT,()=>{
-console.log("Server running")
+console.log("server running")
 })
