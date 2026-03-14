@@ -7,7 +7,6 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 
-// قراءة API KEY من Railway Variables
 const API_KEY = process.env.API_KEY
 
 
@@ -39,11 +38,7 @@ Authorization: "Bearer " + API_KEY,
 }
 )
 
-const image = response.data.data[0].url
-
-res.json({
-image: image
-})
+res.json(response.data)
 
 } catch (err) {
 
@@ -57,8 +52,6 @@ error: "generation failed"
 
 })
 
-
-// تشغيل السيرفر
 const PORT = process.env.PORT || 8080
 
 app.listen(PORT, () => {
