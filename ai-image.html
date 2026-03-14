@@ -127,13 +127,13 @@ font-family:'Cairo',sans-serif;
 </div>
 </div>
 
-<textarea id="prompt" placeholder="اكتب وصف الصورة هنا"></textarea>
+<textarea id="prompt" placeholder="اكتب النص الذي سيظهر في الإعلان"></textarea>
 
 <select id="size">
-<option value="2k">جودة عالية (2K)</option>
 <option value="square">Instagram</option>
 <option value="story">Story / Snapchat</option>
 <option value="banner">Banner</option>
+<option value="2k">جودة عالية (2K)</option>
 </select>
 
 <button onclick="generate()">إنشاء الصورة</button>
@@ -146,7 +146,9 @@ font-family:'Cairo',sans-serif;
 <h3>تفعيل كود الرصيد</h3>
 
 <input id="code" placeholder="أدخل كود الرصيد">
+
 <br>
+
 <button onclick="redeem()">تفعيل الكود</button>
 
 </div>
@@ -160,17 +162,29 @@ const user="user1"
 let timerInterval
 let seconds=0
 
+
 function startTimer(){
+
 seconds=0
+
 timerInterval=setInterval(()=>{
+
 seconds++
+
 document.getElementById("timer").innerText="⏱ وقت الإنشاء: "+seconds+" ثانية"
+
 },1000)
+
 }
 
+
 function stopTimer(){
+
 clearInterval(timerInterval)
+
 }
+
+
 
 function setFrame(){
 
@@ -195,16 +209,36 @@ frame.style.aspectRatio="1/1"
 
 }
 
+
+
 async function generate(){
 
-const prompt=document.getElementById("prompt").value
+const userText=document.getElementById("prompt").value
+
 const status=document.getElementById("status")
 const result=document.getElementById("result")
 
 setFrame()
+
 startTimer()
 
-status.innerText="جاري إنشاء الصورة..."
+status.innerText="جاري إنشاء التصميم..."
+
+
+/* تحويل النص العربي إلى برومبت احترافي */
+
+const prompt = `
+luxury advertising poster,
+professional marketing design,
+elegant composition,
+modern advertising layout,
+cinematic lighting,
+product marketing poster,
+space for typography,
+Arabic calligraphy text "${userText}",
+ultra realistic
+`
+
 
 try{
 
@@ -238,11 +272,14 @@ status.innerText="تم إنشاء الصورة | الرصيد المتبقي: "+
 }catch(error){
 
 stopTimer()
+
 status.innerText="حدث خطأ بالاتصال بالسيرفر"
 
 }
 
 }
+
+
 
 async function redeem(){
 
