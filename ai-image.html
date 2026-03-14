@@ -93,17 +93,37 @@ headers:{
 "Content-Type":"application/json"
 },
 body:JSON.stringify({
-prompt:prompt
+prompt:prompt,
+user:"user1"
 })
 }
 )
 
 const data = await response.json()
 
-const img = data.data[0].url
+if(data.error){
 
-result.src = img
+status.innerText=data.error
+return
 
+}
+
+result.src = data.image
+
+status.innerText="تم إنشاء الصورة | الرصيد المتبقي: "+data.credits
+
+}catch(error){
+
+status.innerText="حدث خطأ بالاتصال بالسيرفر"
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
 status.innerText="تم إنشاء الصورة"
 
 }catch(error){
