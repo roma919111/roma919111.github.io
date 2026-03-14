@@ -1,177 +1,101 @@
-const express = require("express")
-const axios = require("axios")
-const cors = require("cors")
-const { createClient } = require("@supabase/supabase-js")
+import express from "express"
+import cors from "cors"
+import fetch from "node-fetch"
 
 const app = express()
 
-app.use(express.json())
 app.use(cors())
+app.use(express.json())
 
-const API_KEY = process.env.API_KEY
-const SUPABASE_URL = process.env.SUPABASE_URL
-const SUPABASE_KEY = process.env.SUPABASE_KEY
+// API KEY
+const API_KEY = process.env.ARK_API_KEY
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
-
-
-// اختبار السيرفر
-app.get("/", (req, res) => {
-  res.send("AI server working")
-})
-
-
-
-
-// تفعيل كود الرصيد
-app.post("/redeem", async (req, res) => {
-
-  try {
-
-    const { user, code } = req.body
-
-    const { data: codeData, error: codeError } = await supabase
-      .from("codes")
-      .select("*")
-      .eq("code", code)
-      .single()
-
-    if (codeError || !codeData) {
-      return res.json({ error: "invalid code" })
-    }
-
-    if (codeData.used) {
-      return res.json({ error: "code already used" })
-    }
-
-    await supabase
-      .from("codes")
-      .update({ used: true })
-      .eq("code", code)
-
-
-    const { data: userData } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", user)
-      .single()
-
-
-    if (!userData) {
-
-      await supabase
-        .from("users")
-        .insert({
-          id: user,
-          credits: codeData.credits
-        })
-
-      return res.json({
-        credits: codeData.credits
-      })
-    }
-
-
-    const newCredits = userData.credits + codeData.credits
-
-    await supabase
-      .from("users")
-      .update({
-        credits: newCredits
-      })
-      .eq("id", user)
-
-    res.json({
-      credits: newCredits
-    })
-
-  } catch (err) {
-
-    console.log(err)
-
-    res.json({
-      error: "redeem failed"
-    })
-
-  }
-
-})
-
-
-
-
+// credits
+let users = {
+  "user1": 5000
+}
 
 // توليد الصورة
 app.post("/generate", async (req, res) => {
 
   try {
 
-    const { prompt, user, size } = req.body   // ⭐ التعديل هنا
+    const { prompt, user } = req.body
 
-    const { data: userData } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", user)
-      .single()
+    if (!users[user]) users[user] = 0
 
-    if (!userData || userData.credits <= 0) {
-      return res.json({
-        error: "no credits"
-      })
+    if (users[user] <= 0) {
+      return res.json({ error: "لا يوجد رصيد كافي" })
     }
 
+    // تقليل الرصيد
+    users[user] -= 1
 
-    const response = await axios.post(
+    // PROMPT احترافي للخط العربي
+    const finalPrompt = `
+luxury advertisement photo,
+high end commercial photography,
+product centered,
+clean background,
+professional lighting,
+Arabic calligraphy text "${prompt}",
+beautiful elegant Arabic typography,
+gold Arabic lettering,
+clear readable Arabic words,
+perfume advertisement design,
+premium marketing poster
+`
+
+    const response = await fetch(
       "https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
       {
-        model: "ep-20260227140001-vlp9z",
-        prompt: prompt,
-        size: size || "2K",   // ⭐ استخدام المقاس من الواجهة
-        response_format: "url"
-      },
-      {
+        method: "POST",
         headers: {
-          Authorization: "Bearer " + API_KEY,
+          "Authorization": `Bearer ${API_KEY}`,
           "Content-Type": "application/json"
-        }
+        },
+        body: JSON.stringify({
+          model: "ep-20260227140001-vlp9z",
+          prompt: finalPrompt,
+          size: "1024x1024"
+        })
       }
     )
 
+    const data = await response.json()
 
-    const newCredits = userData.credits - 1
-
-    await supabase
-      .from("users")
-      .update({
-        credits: newCredits
-      })
-      .eq("id", user)
-
+    const image = data.data[0].url
 
     res.json({
-      image: response.data.data[0].url,
-      credits: newCredits
+      image: image,
+      credits: users[user]
     })
 
   } catch (err) {
 
-    console.log(err.response?.data || err.message)
-
-    res.json({
-      error: "generation failed"
-    })
+    res.json({ error: "خطأ في إنشاء الصورة" })
 
   }
 
 })
 
+// تفعيل الكود
+app.post("/redeem", (req, res) => {
 
+  const { user, code } = req.body
 
+  if (!users[user]) users[user] = 0
 
-const PORT = process.env.PORT || 8080
+  if (code === "FREE100") {
+    users[user] += 100
+  }
 
-app.listen(PORT, () => {
+  res.json({
+    credits: users[user]
+  })
 
-  console.log("Server running on port " + PORT)
+})
 
+app.listen(3000, () => {
+  console.log("server running")
 })
