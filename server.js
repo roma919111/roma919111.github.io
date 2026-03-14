@@ -1,60 +1,60 @@
-import express from "express"
-import cors from "cors"
-import fetch from "node-fetch"
+const express = require("express")
+const axios = require("axios")
 
 const app = express()
 
-app.use(cors())
 app.use(express.json())
 
-app.get("/", (req, res) => {
-  res.send("Server running")
+// ضع مفتاح Seedance هنا
+const API_KEY = "04bb7d1-38c3-4c88-a805-509a7989baf0"
+
+// صفحة اختبار
+app.get("/", (req,res)=>{
+res.send("AI Image Server Working")
 })
 
-app.post("/generate", async (req, res) => {
+// توليد صورة
+app.post("/generate", async (req,res)=>{
 
-  try {
+try{
 
-    const prompt = req.body.prompt
+let prompt = req.body.prompt
 
-    if (!prompt) {
-      return res.status(400).json({ error: "prompt missing" })
-    }
+let response = await axios.post(
+"https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
+{
+model:"seedream-4-5",
+prompt:prompt,
+size:"1024x1024"
+},
+{
+headers:{
+"Authorization":"Bearer "04bb7d1-38c3-4c88-a805-509a7989baf0,
+"Content-Type":"application/json"
+}
+}
+)
 
-    const response = await fetch(
-      "https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer 04bb7d1-38c3-4c88-a805-509a7989baf0"
-        },
-        body: JSON.stringify({
-          model: "seedream-3.0",
-          prompt: prompt,
-          size: "1024x1024"
-        })
-      }
-    )
+let image = response.data.data[0].url
 
-    const data = await response.json()
+res.json({
+image:image
+})
 
-    res.json(data)
+}catch(err){
 
-  } catch (error) {
+console.log(err.response?.data || err.message)
 
-    console.log(error)
+res.json({
+error:"image generation failed"
+})
 
-    res.status(500).json({
-      error: "generation failed"
-    })
-
-  }
+}
 
 })
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 8080
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log("Server running on port " + PORT)
+app.listen(PORT, ()=>{
+console.log("Server running on port " + PORT)
 })
