@@ -1,117 +1,67 @@
-const express = require("express")
-const cors = require("cors")
-const axios = require("axios")
+import express from "express"
+import cors from "cors"
+import fetch from "node-fetch"
 
 const app = express()
 
 app.use(cors())
 app.use(express.json())
 
+const PORT = process.env.PORT || 3000
 const API_KEY = process.env.ARK_API_KEY
 
 
-// أكواد الرصيد
+app.get("/", (req,res)=>{
+res.send("AI server working")
+})
 
-const codes = {
-
-"EAGLE20-A7F3K":{credits:20, used:false},
-
-"EAGLE100-QW72K":{credits:100, used:false},
-
-"EAGLE500-LS72K":{credits:500, used:false}
-
-}
-
-
-// توليد الصور
 
 app.post("/generate", async (req,res)=>{
 
 try{
 
-const {prompt} = req.body
+const { prompt } = req.body
 
-const response = await axios({
-
+const response = await fetch(
+"https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
+{
 method:"POST",
-
-url:"https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
-
 headers:{
-"Authorization":"Bearer "+API_KEY,
-"Content-Type":"application/json"
+"Content-Type":"application/json",
+"Authorization":`Bearer ${API_KEY}`
 },
-
-data:{
+body:JSON.stringify({
 model:"ep-20260227140001-vlp9z",
 prompt:prompt,
-size:"1024x1024"
+sequential_image_generation:"disabled",
+response_format:"url",
+size:"2K",
+stream:false,
+watermark:true
+})
 }
+)
 
-})
+const data = await response.json()
 
-res.json(response.data)
-
-}catch(err){
-
-console.log(err.response?.data || err.message)
-
-res.status(500).json({
-error:"generation_failed"
-})
-
-}
-
-})
-
-
-// تفعيل الكود
-
-app.post("/activate-code",(req,res)=>{
-
-const {code} = req.body
-
-if(!codes[code]){
-
-return res.json({
-success:false,
-message:"الكود غير صحيح"
-})
-
-}
-
-if(codes[code].used){
-
-return res.json({
-success:false,
-message:"تم استخدام الكود سابقا"
-})
-
-}
-
-codes[code].used = true
+const image = data.data?.[0]?.url
 
 res.json({
-success:true,
-credits:codes[code].credits
+image:image
 })
 
+}catch(error){
+
+console.log(error)
+
+res.status(500).json({
+error:"generation failed"
 })
 
-
-// اختبار السيرفر
-
-app.get("/",(req,res)=>{
-
-res.send("AI server working")
+}
 
 })
-
-
-const PORT = process.env.PORT || 8080
 
 app.listen(PORT,()=>{
-
-console.log("AI server working on port "+PORT)
-
+console.log("Server running")
 })
