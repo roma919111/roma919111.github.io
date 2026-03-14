@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ar">
-
 <head>
 
 <meta charset="UTF-8">
@@ -51,14 +50,12 @@ padding:40px;
 #title{
 
 font-weight:900;
-font-size:64px;
+font-size:60px;
 color:white;
 
 text-shadow:
 0 4px 12px rgba(0,0,0,0.8),
 0 0 20px rgba(0,0,0,0.4);
-
--webkit-text-stroke:1px rgba(0,0,0,0.3);
 
 margin-bottom:10px;
 
@@ -85,7 +82,7 @@ border-radius:12px;
 padding:20px;
 font-size:20px;
 margin-top:10px;
-height:160px;
+height:180px;
 }
 
 select,input{
@@ -142,14 +139,6 @@ width:100%;
 <option value="square">Instagram مربع</option>
 <option value="story">Story / Snapchat</option>
 <option value="banner">Banner</option>
-
-</select>
-
-<select id="position">
-
-<option value="bottom">النص أسفل</option>
-<option value="center">النص وسط</option>
-<option value="top">النص أعلى</option>
 
 </select>
 
@@ -210,34 +199,62 @@ if(type==="banner") frame.style.aspectRatio="16/9"
 
 }
 
-function updateOverlay(){
+function autoPosition(){
 
-const pos=document.getElementById("position").value
-const overlay=document.getElementById("overlay")
+const positions=["top","center","bottom"]
 
-overlay.className="overlay "+pos
+const random=positions[Math.floor(Math.random()*positions.length)]
+
+document.getElementById("overlay").className="overlay "+random
+
+}
+
+function autoFontSize(text){
+
+const length=text.length
+
+if(length<20) return 64
+if(length<40) return 48
+if(length<70) return 36
+
+return 28
 
 }
 
 async function generate(){
 
 updateFrame()
-updateOverlay()
+autoPosition()
 
-const promptFull=document.getElementById("prompt").value
+const textInput=document.getElementById("prompt").value.trim()
 
-const words = promptFull.trim().split(" ")
+let title=""
+let subtitle=""
+let description=textInput
 
-let title = ""
-let subtitle = ""
+const lines=textInput.split("\n")
 
-title = words.slice(0,3).join(" ")
-subtitle = words.slice(3).join(" ")
+if(lines.length>=2){
 
-const description = promptFull
+title=lines[0]
+subtitle=lines.slice(1).join(" ")
 
-document.getElementById("title").innerText = title
-document.getElementById("subtitle").innerText = subtitle
+}else{
+
+const words=textInput.split(" ")
+
+const mid=Math.ceil(words.length/2)
+
+title=words.slice(0,mid).join(" ")
+subtitle=words.slice(mid).join(" ")
+
+}
+
+document.getElementById("title").innerText=title
+document.getElementById("subtitle").innerText=subtitle
+
+document.getElementById("title").style.fontSize=
+autoFontSize(title)+"px"
 
 const status=document.getElementById("status")
 const result=document.getElementById("result")
