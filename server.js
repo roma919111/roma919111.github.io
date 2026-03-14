@@ -26,9 +26,12 @@ const prompt = req.body.prompt
 const response = await axios.post(
 "https://ark.ap-southeast.bytepluses.com/api/v3/images/generations",
 {
-model: "seedream-4-5",
+model: "ep-20260227140001-vlp9z",
 prompt: prompt,
-size: "1024x1024"
+size: "2K",
+response_format: "url",
+stream: false,
+watermark: true
 },
 {
 headers: {
