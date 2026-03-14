@@ -17,7 +17,7 @@ background:#081633;
 color:white;
 font-family:'Cairo',sans-serif;
 text-align:center;
-padding:30px;
+padding:25px;
 }
 
 .container{
@@ -25,35 +25,14 @@ max-width:700px;
 margin:auto;
 }
 
-textarea,input,select{
-width:100%;
-border:none;
-border-radius:10px;
-padding:14px;
-font-size:18px;
-margin-top:10px;
-}
-
-button{
-margin-top:15px;
-padding:12px;
-background:#3b82f6;
-border:none;
-color:white;
-font-size:18px;
-border-radius:10px;
-cursor:pointer;
-width:100%;
-}
-
 .frame{
 position:relative;
-margin-top:25px;
 width:100%;
 aspect-ratio:1/1;
 overflow:hidden;
 border-radius:15px;
 background:#111;
+margin-bottom:25px;
 }
 
 .frame img{
@@ -70,14 +49,46 @@ font-weight:900;
 font-size:40px;
 color:white;
 text-shadow:0 0 15px rgba(0,0,0,0.8);
+padding:20px;
 }
 
 .top{ top:30px }
 .center{ top:50%; transform:translateY(-50%) }
 .bottom{ bottom:30px }
 
-#timer{ margin-top:10px }
-#status{ margin-top:10px }
+textarea{
+width:100%;
+border:none;
+border-radius:12px;
+padding:20px;
+font-size:20px;
+margin-top:10px;
+height:160px;
+}
+
+select,input{
+width:100%;
+border:none;
+border-radius:10px;
+padding:14px;
+font-size:18px;
+margin-top:10px;
+}
+
+button{
+margin-top:15px;
+padding:14px;
+background:#3b82f6;
+border:none;
+color:white;
+font-size:18px;
+border-radius:10px;
+cursor:pointer;
+width:100%;
+}
+
+#timer{margin-top:10px}
+#status{margin-top:10px}
 
 </style>
 
@@ -89,9 +100,23 @@ text-shadow:0 0 15px rgba(0,0,0,0.8);
 
 <h1>🎨 مولد الصور بالذكاء الاصطناعي</h1>
 
-<input id="description" placeholder="وصف الصورة مثال: luxury perfume advertising">
+<!-- الصورة في الأعلى -->
 
-<textarea id="text" placeholder="النص العربي الذي سيظهر على الصورة"></textarea>
+<div class="frame" id="frame">
+
+<img id="result">
+
+<div id="overlay" class="overlay bottom">
+<span id="overlayText"></span>
+</div>
+
+</div>
+
+<textarea id="prompt" placeholder="اكتب الوصف والنص العربي بهذا الشكل:
+
+عطر فاخر مع ورود
+---
+العطر الذي يأسر القلوب"></textarea>
 
 <select id="size">
 
@@ -113,16 +138,6 @@ text-shadow:0 0 15px rgba(0,0,0,0.8);
 
 <div id="timer"></div>
 <div id="status"></div>
-
-<div class="frame" id="frame">
-
-<img id="result">
-
-<div id="overlay" class="overlay bottom">
-<span id="overlayText"></span>
-</div>
-
-</div>
 
 <button onclick="download()">تحميل الصورة</button>
 
@@ -152,7 +167,6 @@ seconds=0
 timerInterval=setInterval(()=>{
 
 seconds++
-
 document.getElementById("timer").innerText="⏱ وقت الإنشاء: "+seconds+" ثانية"
 
 },1000)
@@ -190,8 +204,12 @@ async function generate(){
 updateFrame()
 updateOverlay()
 
-const description=document.getElementById("description").value
-const text=document.getElementById("text").value
+const promptFull=document.getElementById("prompt").value
+
+const parts=promptFull.split("---")
+
+const description=parts[0] || ""
+const text=parts[1] || ""
 
 const status=document.getElementById("status")
 const result=document.getElementById("result")
