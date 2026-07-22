@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة إنتاج الفيديو</title>
+    <style>
+        body { font-family: Tahoma, sans-serif; background-color: #f4f4f9; text-align: center; padding: 20px; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); display: inline-block; width: 100%; max-width: 400px; box-sizing: border-box; }
+        input, textarea, button { width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #loading { color: #e67e22; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>إنتاج فيديو بالذكاء الاصطناعي</h2>
+        
+        <label>اختر صورة:</label>
+        <input type="file" id="imageUpload" accept="image/*">
+        
+        <label>أدخل الوصف (Prompt):</label>
+        <textarea id="promptInput" placeholder="اكتب وصف الفيديو هنا..."></textarea>
+        
+        <button onclick="generateVideo()">إنتاج الفيديو</button>
+        
+        <p id="loading"></p>
+        
+        <div id="resultContainer"></div>
+    </div>
+
+    <!-- ربط مكتبة Gradio Client للاتصال بهاغينغ فيس -->
+    <script type="module">
+        import { client } from "https://cdn.jsdelivr.net/npm/@gradio/client";
+
+        window.generateVideo = async function() {
+            const promptText = document.getElementById("promptInput").value;
+            const imageFile = document.getElementById("imageUpload").files[0];
+            const loadingText = document.getElementById("loading");
+            const resultContainer = document.getElementById("resultContainer");
+
+            if (!imageFile || !promptText) {
+                alert("الرجاء إرفاق صورة وكتابة الوصف أولاً!");
+                return;
+            }
+
+            loadingText.innerText = "جاري الاتصال والمعالجة، قد يستغرق ذلك بعض الوقت...";
+            resultContainer.innerHTML = "";
+
+            try {
+                // الاتصال بالسبيس والتوكن الخاص بك
+                const app = await client("kulkas2pintu/wan555", {
+                    hf_token: "Hf_GAKcZBQRtvDXhmeJaUynoOHBSdcxijNeOo"
+                });
+
+                // إرسال الصورة والنص للسبيس
+                const result = await app.predict("/predict", [
+                    imageFile,
+                    promptText
+                ]);
+
+                loadingText.innerText = "تم إنتاج الفيديو بنجاح!";
+                
+                // عرض الفيديو الناتج
+                const videoUrl = result.data[0].url;
+                resultContainer.innerHTML = `<video controls width="100%"><source src="${videoUrl}" type="video/mp4"></video>`;
+
+            } catch (error) {
+                console.error(error);
+                loadingText.innerText = "حدث خطأ أثناء المعالجة، تأكد من إعدادات السبيس.";
+            }
+        };
+    </script>
+
+</body>
+</html>
+
