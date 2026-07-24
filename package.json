@@ -1,7 +1,6 @@
 {
   "name": "openart-mcp-backend",
   "version": "1.0.0",
-  "description": "نظام إدارة تكاليف OpenArt MCP",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
