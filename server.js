@@ -119,13 +119,3 @@ app.listen(PORT, () => {
     console.log(`السيرفر يعمل الآن على البورت: ${PORT}`);
     console.log(`رابط الوصول المحلي: http://localhost:${PORT}`);
 });
-});
-
-// بدء تشغيل السيرفر
-app.listen(PORT, () => {
-    console.log(`السيرفر يعمل الآن على البورت: ${PORT}`);
-    console.log(`رابط الوصول المحلي: http://localhost:${PORT}`);
-});
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
