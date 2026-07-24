@@ -1,101 +1,26 @@
-const express = require("express")
-const axios = require("axios")
-const cors = require("cors")
-const { createClient } = require("@supabase/supabase-js") 
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
-const app = express() 
+const port = process.env.PORT || 3000;
 
-app.use(express.json())
-app.use(cors()) 
+const server = http.createServer((req, res) => {
+    let filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
+    
+    fs.readFile(filePath, (err, content) => {
+        if (err) {
+            res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end('<h1>الصفحة غير موجودة</h1>');
+        } else {
+            res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            res.end(content, 'utf-8');
+        }
+    });
+});
 
-const API_KEY = process.env.API_KEY
-const SUPABASE_URL = process.env.SUPABASE_URL
-const SUPABASE_KEY = process.env.SUPABASE_KEY 
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
-
-
-// اختبار السيرفر
-app.get("/", (req, res) => {
-  res.send("AI server working")
-})
-
-
-
-
-// تفعيل كود الرصيد
-app.post("/redeem", async (req, res) => { 
-
-  try { 
-
-    const { user, code } = req.body 
-
-    const { data: codeData, error: codeError } = await supabase
-      .from("codes")
-      .select("*")
-      .eq("code", code)
-      .single() 
-
-    if (codeError || !codeData) {
-      return res.json({ error: "invalid code" })
-    } 
-
-    if (codeData.used) {
-      return res.json({ error: "code already used" })
-    } 
-
-    await supabase
-      .from("codes")
-      .update({ used: true })
-      .eq("code", code)
-
-
-    const { data: userData } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", user)
-      .single()
-
-
-    if (!userData) { 
-
-      await supabase
-        .from("users")
-        .insert({
-          id: user,
-          credits: codeData.credits
-        }) 
-
-      return res.json({
-        credits: codeData.credits
-      })
-    }
-
-
-    const newCredits = userData.credits + codeData.credits 
-
-    await supabase
-      .from("users")
-      .update({
-        credits: newCredits
-      })
-      .eq("id", user) 
-
-    res.json({
-      credits: newCredits
-    }) 
-
-  } catch (err) { 
-
-    console.log(err) 
-
-    res.json({
-      error: "redeem failed"
-    }) 
-
-  } 
-
-})
+server.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
 
 
 
