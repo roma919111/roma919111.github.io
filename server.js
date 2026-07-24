@@ -16,10 +16,10 @@ app.use(session({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// خدمة الملفات الثابتة - تم التصحيح هنا ليعمل على Railway
+// خدمة الملفات الثابتة - تم التأكد من صحة هذا السطر
 app.use(express.static(path.join(__dirname, 'public')));
 
-// بيانات الدخول
+// بيانات الدخول الافتراضية
 const USER_CREDENTIALS = {
     username: 'admin',
     password: 'password123'
@@ -40,8 +40,8 @@ app.get('/api/data', (req, res) => {
     
     // بيانات تجريبية مع حساب الربح 30%
     const tools = [
-        { name: 'Image Generation', baseCost: 10.00, description: 'توليد صور' },
-        { name: 'Video Editing', baseCost: 50.00, description: 'تحرير فيديو' }
+        { name: 'Image Generation', baseCost: 10.00, description: 'توليد صور عالية الجودة' },
+        { name: 'Video Editing', baseCost: 50.00, description: 'تحرير فيديو احترافي' }
     ];
 
     const processed = tools.map(t => ({
@@ -53,34 +53,11 @@ app.get('/api/data', (req, res) => {
     res.json(processed);
 });
 
-// توجيه للواجهة
+// توجيه كافة الطلبات الأخرى لملف index.html
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-});
-
-    } catch (error) {
-        console.error('خطأ في جلب البيانات من MCP:', error);
-        res.status(500).json({ 
-            error: 'حدث خطأ أثناء معالجة البيانات من OpenArt MCP',
-            details: error.message 
-        });
-    } finally {
-        // إغلاق الاتصال إذا كان مفتوحاً
-        // await client.close();
-    }
-});
-
-// توجيه كافة الطلبات الأخرى لملف Index.html (لخدمة SPA أو الواجهة)
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// بدء تشغيل السيرفر
-app.listen(PORT, () => {
-    console.log(`السيرفر يعمل الآن على البورت: ${PORT}`);
-    console.log(`رابط الوصول المحلي: http://localhost:${PORT}`);
 });
