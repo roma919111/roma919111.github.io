@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,7 +18,6 @@ app.use(session({
     cookie: { secure: false }
 }));
 
-// حماية المسارات
 function isAuthenticated(req, res, next) {
     if (req.session && req.session.isAuthenticated) {
         return next();
@@ -25,7 +25,6 @@ function isAuthenticated(req, res, next) {
     res.status(401).json({ error: 'Unauthorized' });
 }
 
-// تسجيل الدخول
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     if (username === ADMIN_USER && password === ADMIN_PASS) {
@@ -35,19 +34,16 @@ app.post('/api/login', (req, res) => {
     res.status(401).json({ success: false, message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
 });
 
-// تسجيل الخروج
 app.post('/api/logout', (req, res) => {
     req.session.destroy(() => {
         res.json({ success: true });
     });
 });
 
-// التحقق من الجلسة
 app.get('/api/check-auth', (req, res) => {
     res.json({ isAuthenticated: !!(req.session && req.session.isAuthenticated) });
 });
 
-// جلب التكاليف والأسعار مع نسبة 30%
 app.get('/api/costs', isAuthenticated, async (req, res) => {
     try {
         const fetch = (await import('node-fetch')).default;
@@ -95,7 +91,6 @@ app.get('/api/costs', isAuthenticated, async (req, res) => {
     }
 });
 
-// واجهة المستخدم (HTML & CSS & JS) مدمجة بالكامل لضمان عدم حدوث أي خطأ في المسارات
 app.get('*', (req, res) => {
     res.send(`<!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -221,18 +216,6 @@ app.get('*', (req, res) => {
     </script>
 </body>
 </html>`);
-});
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
-
-// تقديم ملفات الواجهة الثابتة
-app.use(express.static(path.join(__dirname, 'public')));
-
-// توجيه الصفحة الرئيسية
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
