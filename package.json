@@ -1,7 +1,6 @@
 {
-  "name": "openart-mcp-billing",
+  "name": "openart-mcp-clean",
   "version": "1.0.0",
-  "description": "Integration with OpenArt MCP with automatic 30% markup and auth",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
