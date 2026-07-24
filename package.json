@@ -1,15 +1,8 @@
 {
-  "name": "ai-image-server",
+  "name": "roma91911.github.io",
   "version": "1.0.0",
-  "main": "server.js",
-  "type": "commonjs",
   "scripts": {
     "start": "node server.js"
   },
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.7",
-    "axios": "^1.6.7",
-    "cors": "^2.8.5",
-    "express": "^4.18.2"
-  }
+  "dependencies": {}
 }
