@@ -16,10 +16,10 @@ app.use(session({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// خدمة الملفات الثابتة - تم التأكد من صحة هذا السطر
-app.use(express.static(path.join(__dirname, 'public')));
+// خدمة الملفات من المجلد الرئيسي مباشرة (بدون مجلد public)
+app.use(express.static(__dirname));
 
-// بيانات الدخول الافتراضية
+// بيانات الدخول
 const USER_CREDENTIALS = {
     username: 'admin',
     password: 'password123'
@@ -38,7 +38,6 @@ app.post('/api/login', (req, res) => {
 app.get('/api/data', (req, res) => {
     if (!req.session.user) return res.status(401).json({ error: 'يرجى تسجيل الدخول' });
     
-    // بيانات تجريبية مع حساب الربح 30%
     const tools = [
         { name: 'Image Generation', baseCost: 10.00, description: 'توليد صور عالية الجودة' },
         { name: 'Video Editing', baseCost: 50.00, description: 'تحرير فيديو احترافي' }
@@ -53,9 +52,10 @@ app.get('/api/data', (req, res) => {
     res.json(processed);
 });
 
-// توجيه كافة الطلبات الأخرى لملف index.html
+// توجيه لملف Index.html الموجود في المجلد الرئيسي
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    // لاحظ استخدام 'Index.html' بحرف I كبير كما هو في ملفاتك
+    res.sendFile(path.join(__dirname, 'Index.html'));
 });
 
 app.listen(PORT, () => {
