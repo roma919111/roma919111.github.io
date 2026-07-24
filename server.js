@@ -1,101 +1,66 @@
-import express from 'express';
-import session from 'express-session';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-// MCP SDK imports
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const express = require('express');
+const session = require('express-session');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// إعدادات الجلسة (Session)
+// إعدادات الجلسة
 app.use(session({
-    secret: 'openart-mcp-secure-key-2026', // يجب تغيير هذا في الإنتاج ليكون أكثر تعقيداً
+    secret: 'openart-mcp-secret-key-2026',
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false } // اجعله true في حال استخدام HTTPS
+    cookie: { secure: false }
 }));
 
-// معالجة بيانات النماذج (Body Parser)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// خدمة الملفات الثابتة (Static Files)
+// خدمة الملفات الثابتة - تم التصحيح هنا ليعمل على Railway
 app.use(express.static(path.join(__dirname, 'public')));
 
-// بيانات تجريبية لتسجيل الدخول (يمكن استبدالها بقاعدة بيانات لاحقاً)
+// بيانات الدخول
 const USER_CREDENTIALS = {
     username: 'admin',
     password: 'password123'
 };
 
-// Middleware للتحقق من الجلسة
-const isAuthenticated = (req, res, next) => {
-    if (req.session.user) {
-        return next();
-    }
-    res.status(401).json({ error: 'غير مصرح لك بالوصول. يرجى تسجيل الدخول.' });
-};
-
-// مسار تسجيل الدخول
+// مسارات الـ API
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
-    
     if (username === USER_CREDENTIALS.username && password === USER_CREDENTIALS.password) {
         req.session.user = username;
-        return res.json({ success: true, message: 'تم تسجيل الدخول بنجاح' });
+        return res.json({ success: true });
     }
-    
-    res.status(401).json({ success: false, message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+    res.status(401).json({ success: false, message: 'بيانات الدخول خاطئة' });
 });
 
-// مسار تسجيل الخروج
-app.post('/api/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ success: true });
+app.get('/api/data', (req, res) => {
+    if (!req.session.user) return res.status(401).json({ error: 'يرجى تسجيل الدخول' });
+    
+    // بيانات تجريبية مع حساب الربح 30%
+    const tools = [
+        { name: 'Image Generation', baseCost: 10.00, description: 'توليد صور' },
+        { name: 'Video Editing', baseCost: 50.00, description: 'تحرير فيديو' }
+    ];
+
+    const processed = tools.map(t => ({
+        ...t,
+        profitAmount: (t.baseCost * 0.3).toFixed(2),
+        finalPrice: (t.baseCost * 1.3).toFixed(2)
+    }));
+    
+    res.json(processed);
 });
 
-// مسار جلب البيانات مع الحسابات الدقيقة (30% ربح)
-app.get('/api/data', isAuthenticated, async (req, res) => {
-    const MCP_URL = 'https://mcp.openart.ai/mcp';
-    
-    const client = new Client({
-        name: "openart-mcp-client",
-        version: "1.0.0",
-    });
+// توجيه للواجهة
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
-    const transport = new StreamableHTTPClientTransport(new URL(MCP_URL));
-
-    try {
-        // في بيئة حقيقية، ستحتاج لمصادقة OAuth، ولكن هنا سنقوم بمحاكاة جلب الأدوات (Tools)
-        // التي يقدمها السيرفر وتطبيق معادلة الربح (30%) على تكاليفها الافتراضية.
-        // await client.connect(transport);
-        
-        const tools = [
-            { name: 'Image Generation', baseCost: 0.05, description: 'توليد صور عالية الجودة' },
-            { name: 'Video Editing', baseCost: 0.50, description: 'تحرير الفيديو بالذكاء الاصطناعي' },
-            { name: 'Upscaling', baseCost: 0.02, description: 'رفع جودة الصور' }
-        ];
-
-        const profitMargin = 0.30;
-        const processedData = tools.map(tool => {
-            const finalPrice = tool.baseCost * (1 + profitMargin);
-            return {
-                name: tool.name,
-                description: tool.description,
-                originalCost: tool.baseCost,
-                profitAmount: (tool.baseCost * profitMargin).toFixed(2),
-                finalPrice: finalPrice.toFixed(2)
-            };
-        });
-
-        res.json(processedData);
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
     } catch (error) {
         console.error('خطأ في جلب البيانات من MCP:', error);
