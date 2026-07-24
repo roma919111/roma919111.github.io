@@ -1,16 +1,22 @@
-const express = require('express');
-const session = require('express-session');
-const path = require('path');
+import express from 'express';
+import session from 'express-session';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-// ملاحظة: في نسخ Node.js الحديثة (18+) fetch مدمج تلقائياً.
-// إذا كنت تستخدم نسخة أقدم، ستحتاج لتثبيت node-fetch.
+// MCP SDK imports
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // إعدادات الجلسة (Session)
 app.use(session({
-    secret: 'openart-mcp-secret-key-2026', // يجب تغيير هذا في الإنتاج ليكون أكثر تعقيداً
+    secret: 'openart-mcp-secure-key-2026', // يجب تغيير هذا في الإنتاج ليكون أكثر تعقيداً
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false } // اجعله true في حال استخدام HTTPS
@@ -21,7 +27,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // خدمة الملفات الثابتة (Static Files)
-app.use(express.static(path.join(__currentDir, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // بيانات تجريبية لتسجيل الدخول (يمكن استبدالها بقاعدة بيانات لاحقاً)
 const USER_CREDENTIALS = {
@@ -57,26 +63,34 @@ app.post('/api/logout', (req, res) => {
 
 // مسار جلب البيانات مع الحسابات الدقيقة (30% ربح)
 app.get('/api/data', isAuthenticated, async (req, res) => {
+    const MCP_URL = 'https://mcp.openart.ai/mcp';
+    
+    const client = new Client({
+        name: "openart-mcp-client",
+        version: "1.0.0",
+    });
+
+    const transport = new StreamableHTTPClientTransport(new URL(MCP_URL));
+
     try {
-        // مثال لطلب بيانات من مصدر خارجي (OpenArt MCP أو API خارجي)
-        // سنستخدم هنا بيانات وهمية لمحاكاة الاستجابة في حال لم يتوفر رابط API فعلي
-        const mockExternalData = [
-            { id: 1, name: 'باقة المبتدئين', originalCost: 10.00, description: 'دعم فني محدود' },
-            { id: 2, name: 'الباقة الاحترافية', originalCost: 50.00, description: 'دعم فني 24/7' },
-            { id: 3, name: 'باقة الشركات', originalCost: 200.00, description: 'خوادم مخصصة' }
+        // في بيئة حقيقية، ستحتاج لمصادقة OAuth، ولكن هنا سنقوم بمحاكاة جلب الأدوات (Tools)
+        // التي يقدمها السيرفر وتطبيق معادلة الربح (30%) على تكاليفها الافتراضية.
+        // await client.connect(transport);
+        
+        const tools = [
+            { name: 'Image Generation', baseCost: 0.05, description: 'توليد صور عالية الجودة' },
+            { name: 'Video Editing', baseCost: 0.50, description: 'تحرير الفيديو بالذكاء الاصطناعي' },
+            { name: 'Upscaling', baseCost: 0.02, description: 'رفع جودة الصور' }
         ];
 
-        // في حال كان لديك API فعلي، يمكنك استبدال الكود أعلاه بـ:
-        // const response = await fetch('https://api.example.com/data');
-        // const mockExternalData = await response.json();
-
-        const profitMargin = 0.30; // 30% نسبة الربح
-
-        const processedData = mockExternalData.map(item => {
-            const finalPrice = item.originalCost * (1 + profitMargin);
+        const profitMargin = 0.30;
+        const processedData = tools.map(tool => {
+            const finalPrice = tool.baseCost * (1 + profitMargin);
             return {
-                ...item,
-                profitAmount: (item.originalCost * profitMargin).toFixed(2),
+                name: tool.name,
+                description: tool.description,
+                originalCost: tool.baseCost,
+                profitAmount: (tool.baseCost * profitMargin).toFixed(2),
                 finalPrice: finalPrice.toFixed(2)
             };
         });
@@ -84,18 +98,27 @@ app.get('/api/data', isAuthenticated, async (req, res) => {
         res.json(processedData);
 
     } catch (error) {
-        console.error('خطأ في جلب البيانات:', error);
-        // معالجة آمنة للأخطاء لضمان عدم توقف السيرفر
+        console.error('خطأ في جلب البيانات من MCP:', error);
         res.status(500).json({ 
-            error: 'حدث خطأ أثناء معالجة البيانات من المصدر الخارجي',
+            error: 'حدث خطأ أثناء معالجة البيانات من OpenArt MCP',
             details: error.message 
         });
+    } finally {
+        // إغلاق الاتصال إذا كان مفتوحاً
+        // await client.close();
     }
 });
 
 // توجيه كافة الطلبات الأخرى لملف Index.html (لخدمة SPA أو الواجهة)
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__currentDir, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// بدء تشغيل السيرفر
+app.listen(PORT, () => {
+    console.log(`السيرفر يعمل الآن على البورت: ${PORT}`);
+    console.log(`رابط الوصول المحلي: http://localhost:${PORT}`);
+});
 });
 
 // بدء تشغيل السيرفر
