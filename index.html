@@ -1,1 +1,23 @@
-const mcpUrl = "https://mcp.openart.ai/mcp";
+<script>
+  const mcpUrl = 'https://mcp.openart.ai/mcp';
+  const markupPercentage = 1.30; // إضافة نسبة 30% على التكاليف
+
+  // دالة لجلب التكلفة وتطبيق الربح
+  async function calculatePrice() {
+    try {
+      const response = await fetch(mcpUrl);
+      const data = await response.json();
+      
+      // افتراض أن التكلفة تأتي باسم cost
+      let baseCost = data.cost || 0; 
+      let finalPrice = baseCost * markupPercentage;
+      
+      console.log("السعر النهائي بعد إضافة 30%:", finalPrice);
+    } catch (error) {
+      console.log("جاري الاتصال بسيرفر MCP...");
+    }
+  }
+
+  calculatePrice();
+</script>
+
